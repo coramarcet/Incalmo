@@ -66,9 +66,20 @@ class Scan(HighLevelAction):
         for event in events:
             if isinstance(event, ServicesDiscoveredOnHost):
                 for port, service in event.services.items():
+                    
                     if "http" in service:
+                        # Check if this is an SSL service
+                        is_ssl = "+ssl" in service or "https" in service
+                        
+                        # Clean service name for checking
+                        clean_service = service.replace("+ssl", "").lower()
+                        
+                        # Skip Elasticsearch with SSL as it tends to hang
+                        if is_ssl and 'elasticsearch' in clean_service:
+                            continue
+                            
                         vuln_event = await low_level_action_orchestrator.run_action(
-                            NiktoScan(scan_agent, event.host_ip, port, service), context
+                            NiktoScan(scan_agent, event.host_ip, port, service, is_ssl), context
                         )
                         events += vuln_event
 

@@ -12,12 +12,20 @@ class NiktoScan(LowLevelAction):
         host: str,
         port: int,
         service: str,
+        is_ssl: bool = False,
     ):
         self.host = host
         self.port = port
         self.service = service
+        self.is_ssl = is_ssl
 
-        command = f"nikto -h {host} -p {port} -maxtime 10s -timeout 3"
+        # Use https:// for SSL services, otherwise use regular host
+        if is_ssl:
+            target = f"https://{host}"
+        else:
+            target = host
+            
+        command = f"nikto -h {target} -p {port} -maxtime 10s -timeout 3 -ask no"
         super().__init__(agent, command)
 
     async def get_result(
