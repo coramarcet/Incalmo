@@ -39,7 +39,7 @@ class HighLevelActionOrchestrator:
             context,
         )
         self.logger.info(
-            "HighLevelAction started execution",
+            "HighLevelAction executed",
             type="HighLevelAction",
             timestamp=datetime.now().isoformat(),
             high_level_action_id=context.hl_id,
