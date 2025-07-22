@@ -58,6 +58,17 @@ class C2ApiClient:
                 f"Failed to get agents: {response.status_code} {response.text}"
             )
 
+    def get_llm_agent_action(self):
+        """Fetch the next LLM Agent action from the queue"""
+        response = requests.get(f"{self.server_url}/get_llm_agent_action")
+        if response.ok:
+            action_data = response.json()
+            return action_data.get("action", None)
+        else:
+            raise Exception(
+                f"Failed to get LLM Agent action: {response.status_code} {response.text}"
+            )
+
     def send_command(self, low_level_action: LowLevelAction) -> CommandResult:
         """Send a command to an agent and poll for results."""
         # Send the command

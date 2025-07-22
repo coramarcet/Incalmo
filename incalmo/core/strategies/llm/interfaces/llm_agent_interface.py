@@ -21,12 +21,14 @@ class LLMAgentInterface:
 
         # Prepare the messages for the LLM
         self.conversation.append({"role": "user", "content": message})
+        self.logger.info(f"Incalmo's response: \n{message}")
 
         # Get the response from the LLM
         response = self.get_response_from_model(
             model_name=self.execution_llm,
             messages=self.conversation,
         )
+        self.logger.info(f"LLM Agent's response: \n{response}")
 
         self.conversation.append({"role": "assistant", "content": response})
 

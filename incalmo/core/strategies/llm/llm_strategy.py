@@ -98,6 +98,7 @@ class LLMStrategy(IncalmoStrategy, ABC):
                 llm_interface=self.agent_interface,
             )
             events = await self.high_level_action_orchestrator.run_action(action)
+            return False
 
         finished = await self.llm_request()
         if self.cur_step > self.total_steps or finished:

@@ -86,6 +86,9 @@ command_results: dict[str, Command] = {}
 # Store environment info
 hosts = []
 
+# Store LLM Agent actions
+llm_agent_actions = []
+
 # Store running strategy tasks
 running_strategy_tasks: Dict[str, str] = {}  # strategy_name -> task_id
 
@@ -269,6 +272,36 @@ def get_hosts():
             "hosts": hosts,
         }
     ), 200
+
+
+# Add LLM Agent Action
+@app.route("/start_llm_agent_action", methods=["POST"])
+def add_llm_agent_action():
+    try:
+        data = request.get_json()
+        json_data = json.loads(data)
+        if not json_data or "action" not in json_data:
+            return jsonify({"error": "Invalid request data"}), 400
+
+        action = json_data["action"]
+        llm_agent_actions.append(action)
+
+        return jsonify({"status": "success", "message": f"Action {action} added"}), 200
+
+    except json.JSONDecodeError:
+        return jsonify({"error": "Invalid JSON data"}), 400
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+
+# Get LLM Agent Action from queue
+@app.route("/get_llm_agent_action", methods=["GET"])
+def get_llm_agent_action():
+    if not llm_agent_actions:
+        return jsonify({"error": "No LLM Agent actions in queue"}), 404
+
+    action = llm_agent_actions.pop(0)
+    return jsonify({"action": action}), 200
 
 
 @app.route("/agent/delete/<paw>", methods=["DELETE"])
