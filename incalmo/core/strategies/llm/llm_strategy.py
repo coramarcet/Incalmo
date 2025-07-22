@@ -4,6 +4,7 @@ import traceback
 from incalmo.core.actions.HighLevel.llm_agents.llm_agent_action import (
     LLMAgentAction,
 )
+from incalmo.core.actions.HighLevel.llm_agents import LLMAgentScan
 
 from incalmo.core.strategies.incalmo_strategy import IncalmoStrategy
 from config.attacker_config import AbstractionLevel
@@ -17,6 +18,7 @@ from incalmo.core.strategies.llm.llm_response import (
 from incalmo.core.strategies.llm.interfaces.llm_interface import (
     LLMInterface,
 )
+from incalmo.core.strategies.llm.interfaces.llm_agent_interface import LLMAgentInterface
 
 from incalmo.core.actions.LowLevel import RunBashCommand, MD5SumAttackerData
 from incalmo.core.actions import HighLevel, LowLevel
@@ -37,6 +39,10 @@ class LLMStrategy(IncalmoStrategy, ABC):
     def __init__(self, config: AttackerConfig, **kwargs):
         super().__init__(config, **kwargs)
         self.logger = self.logging_service.setup_logger(logger_name="llm")
+        self.agent_logger = self.logging_service.setup_logger(logger_name="llm_agent")
+
+        # LLM Agent Interface
+        self.agent_interface = LLMAgentInterface(logger=self.agent_logger)
 
         # Logging Start
         self.logger.info(
@@ -81,9 +87,19 @@ class LLMStrategy(IncalmoStrategy, ABC):
         # Check if any new agents were created
         agents = self.c2_client.get_agents()
         self.environment_state_service.update_host_agents(agents)
+        agent_action = self.c2_client.get_llm_agent_action()
+        if agent_action:
+            self.agent_logger.info(
+                f"[LLMStrategy] Running LLM agent action - {agent_action}"
+            )
+            action = LLMAgentScan(
+                scan_host=agent_action.scan_host,
+                subnets_to_scan=agent_action.subnets_to_scan,
+                llm_interface=self.agent_interface,
+            )
+            events = await self.high_level_action_orchestrator.run_action(action)
 
         finished = await self.llm_request()
-
         if self.cur_step > self.total_steps or finished:
             await self.finished_cb()
             return True

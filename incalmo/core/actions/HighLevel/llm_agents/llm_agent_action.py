@@ -1,16 +1,14 @@
 from abc import abstractmethod, ABC
 from incalmo.core.actions.high_level_action import HighLevelAction
-from incalmo.core.actions.HighLevel.llm_agents.llm_agent import LLMAgent
+from incalmo.core.strategies.llm.interfaces.llm_agent_interface import LLMAgentInterface
 
 
 class LLMAgentAction(HighLevelAction, ABC):
-    def __init__(self) -> None:
+    def __init__(self, llm_interface: LLMAgentInterface) -> None:
         super().__init__()
 
         self.MAX_CONVERSATION_LEN = 10
-
-        preprompt = self.get_preprompt()
-        self.llm_agent = LLMAgent(preprompt)
+        self.llm_interface = llm_interface
 
     @abstractmethod
     def get_preprompt(self) -> str:
@@ -24,5 +22,5 @@ class LLMAgentAction(HighLevelAction, ABC):
         class_name = self.__class__.__name__
 
         conversation = f"##### {class_name} Conversation: #####\n"
-        conversation += self.llm_agent.conversation_to_string()
+        conversation += self.llm_interface.conversation_to_string()
         return conversation

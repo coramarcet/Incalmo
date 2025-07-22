@@ -22,6 +22,7 @@ from incalmo.core.services import (
 
 from incalmo.core.models.network import ScanResults
 from incalmo.core.services.action_context import HighLevelContext
+from incalmo.core.strategies.llm.interfaces.llm_agent_interface import LLMAgentInterface
 
 
 class LLMAgentScan(LLMAgentAction):
@@ -29,10 +30,13 @@ class LLMAgentScan(LLMAgentAction):
         self,
         scan_host: Host,
         subnets_to_scan: list[Subnet],
+        llm_interface: LLMAgentInterface,
     ):
         self.scan_host = scan_host
         self.subnets_to_scan = subnets_to_scan
-        super().__init__()
+        self.llm_interface = llm_interface
+        self.llm_interface.set_preprompt(self.get_preprompt())
+        super().__init__(llm_interface)
 
     async def run(
         self,
@@ -46,7 +50,7 @@ class LLMAgentScan(LLMAgentAction):
         if not scan_agent:
             return events
 
-        cur_response = ""
+        cur_response = "Start the scan"
 
         for i in range(self.MAX_CONVERSATION_LEN):
             new_msg = self.llm_agent.send_message(cur_response)
