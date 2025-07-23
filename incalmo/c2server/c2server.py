@@ -278,7 +278,7 @@ def get_hosts():
 @app.route("/start_llm_agent_action", methods=["POST"])
 def add_llm_agent_action():
     try:
-        data = request.get_json()
+        data = request.data
         json_data = json.loads(data)
         if not json_data or "action" not in json_data:
             return jsonify({"error": "Invalid request data"}), 400

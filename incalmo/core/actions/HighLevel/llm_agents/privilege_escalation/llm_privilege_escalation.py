@@ -1,5 +1,6 @@
 import os
 from string import Template
+from typing import Dict, Any
 
 from incalmo.core.actions.LowLevel import (
     RunBashCommand,
@@ -17,16 +18,28 @@ from incalmo.core.actions.HighLevel.llm_agents.llm_agent_action import (
     LLMAgentAction,
 )
 from incalmo.core.services.action_context import HighLevelContext
+from incalmo.core.strategies.llm.interfaces.llm_agent_interface import LLMAgentInterface
 
 
 class LLMPrivilegeEscalate(LLMAgentAction):
     def __init__(
         self,
         host: Host,
+        llm_interface: LLMAgentInterface,
     ):
         super().__init__()
         self.host = host
+        self.llm_interface = llm_interface
+        self.llm_interface.set_preprompt(self.get_preprompt())
+        super().__init__(llm_interface)
 
+    @classmethod
+    def from_params(cls, params: Dict[str, Any], llm_interface: LLMAgentInterface) -> 'LLMPrivilegeEscalate':
+       host = llm_interface.environment_state_service.network.find_host_by_ip(
+            params["host"]
+        )
+       return cls(host, llm_interface)
+    
     async def run(
         self,
         low_level_action_orchestrator: LowLevelActionOrchestrator,

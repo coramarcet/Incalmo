@@ -1,5 +1,6 @@
 import os
 from string import Template
+from typing import Any, Dict
 
 from incalmo.core.actions.HighLevel.llm_agents.llm_agent_action import (
     LLMAgentAction,
@@ -16,6 +17,7 @@ from incalmo.core.services import (
     AttackGraphService,
 )
 from incalmo.core.services.action_context import HighLevelContext
+from incalmo.core.strategies.llm.interfaces.llm_agent_interface import LLMAgentInterface
 
 
 class LLMLateralMove(LLMAgentAction):
@@ -23,11 +25,23 @@ class LLMLateralMove(LLMAgentAction):
         self,
         source_host: Host,
         target_host: Host,
+        llm_interface: LLMAgentInterface,
     ):
         self.source_host = source_host
         self.target_host = target_host
-        # get_preprompt depends on source_host and target_host
-        super().__init__()
+        self.llm_interface = llm_interface
+        self.llm_interface.set_preprompt(self.get_preprompt())
+        super().__init__(llm_interface)
+
+    @classmethod
+    def from_params(cls, params: Dict[str, Any], llm_interface: LLMAgentInterface) -> 'LLMLateralMove':
+       src_host = llm_interface.environment_state_service.network.find_host_by_ip(
+            params["src_host"]
+        )
+       target_host = llm_interface.environment_state_service.network.find_host_by_ip(
+           params["target_host"]
+       )
+       return cls(src_host, target_host, llm_interface)
 
     async def run(
         self,

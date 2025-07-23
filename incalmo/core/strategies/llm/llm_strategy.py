@@ -92,7 +92,7 @@ class LLMStrategy(IncalmoStrategy, ABC):
             self.agent_logger.info(
                 f"[LLMStrategy] Running LLM agent action - {agent_action.action}"
             )
-            action = self.agent_registry.get_llm_agent_action(agent_action.action)
+            action = self.agent_registry.get_llm_agent_action(agent_action).from_params(agent_action.params, self.agent_interface)
             events = await self.high_level_action_orchestrator.run_action(action)
             return False
 

@@ -5,7 +5,8 @@ from incalmo.core.actions.HighLevel.llm_agents import (
     LLMFindInformation, 
     LLMExfiltrateData
 )
-from incalmo.core.actions.HighLevel.llm_agents.llm_agent_action import LLMAgentAction, LLMAgentActionData
+from incalmo.core.actions.HighLevel.llm_agents.llm_agent_action import LLMAgentAction
+from incalmo.models.llm_agent_action_data import LLMAgentActionData
 
 class LLMAgentRegistry:
     def __init__(self):
@@ -20,6 +21,7 @@ class LLMAgentRegistry:
             """
             Retrieves an LLM agent action class by its name.
             """
+            print(f"Retrieving LLM agent action: {action_data}")
             if action_data.action in self.agent_registry:
                 return self.agent_registry[action_data.action]
             else:

@@ -8,7 +8,7 @@ import time
 from incalmo.models.command_result import CommandResult
 from incalmo.models.command import Command, CommandStatus
 from incalmo.core.models.network import Network
-from incalmo.core.actions.HighLevel.llm_agents.llm_agent_action import LLMAgentActionData
+from incalmo.models.llm_agent_action_data import LLMAgentActionData
 
 
 class C2ApiClient:
@@ -66,10 +66,8 @@ class C2ApiClient:
             action_data = response.json()
             return LLMAgentActionData(**action_data)
         else:
-            raise Exception(
-                f"Failed to get LLM Agent action: {response.status_code} {response.text}"
-            )
-
+            return None
+        
     def send_command(self, low_level_action: LowLevelAction) -> CommandResult:
         """Send a command to an agent and poll for results."""
         # Send the command
