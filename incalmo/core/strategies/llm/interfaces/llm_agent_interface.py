@@ -1,12 +1,14 @@
 from incalmo.core.strategies.llm.langchain_registry import LangChainRegistry
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from incalmo.core.services.config_service import ConfigService
+from incalmo.core.services import EnvironmentStateService
 
 
 class LLMAgentInterface:
-    def __init__(self, logger):
+    def __init__(self, logger, environment_state_service: EnvironmentStateService):
         # Initialize the conversation
         self.logger = logger
+        self.environment_state_service = environment_state_service
         self.conversation = []
         self._registry = LangChainRegistry()
         self.execution_llm = ConfigService().get_config().execution_llm
@@ -88,3 +90,5 @@ class LLMAgentInterface:
             self.conversation[0]["content"] = preprompt
         else:
             self.conversation.append({"role": "system", "content": preprompt})
+
+    

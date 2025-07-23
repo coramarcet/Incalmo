@@ -4,7 +4,6 @@ import traceback
 from incalmo.core.actions.HighLevel.llm_agents.llm_agent_action import (
     LLMAgentAction,
 )
-from incalmo.core.actions.HighLevel.llm_agents import LLMAgentScan
 
 from incalmo.core.strategies.incalmo_strategy import IncalmoStrategy
 from config.attacker_config import AbstractionLevel
@@ -12,6 +11,7 @@ from incalmo.core.services.environment_state_service import (
     EnvironmentStateService,
 )
 
+from incalmo.core.strategies.llm.llm_agent_registry import LLMAgentRegistry
 from incalmo.core.strategies.llm.llm_response import (
     LLMResponseType,
 )
@@ -41,9 +41,9 @@ class LLMStrategy(IncalmoStrategy, ABC):
         self.logger = self.logging_service.setup_logger(logger_name="llm")
         self.agent_logger = self.logging_service.setup_logger(logger_name="llm_agent")
 
-        # LLM Agent Interface
-        self.agent_interface = LLMAgentInterface(logger=self.agent_logger)
-
+        # LLM Agent Interface and registry
+        self.agent_interface = LLMAgentInterface(logger=self.agent_logger, environment_state_service=self.environment_state_service)
+        self.agent_registry = LLMAgentRegistry()
         # Logging Start
         self.logger.info(
             f"[LLMStrategy] Starting LLM strategy with config: {self.config}"
@@ -90,13 +90,9 @@ class LLMStrategy(IncalmoStrategy, ABC):
         agent_action = self.c2_client.get_llm_agent_action()
         if agent_action:
             self.agent_logger.info(
-                f"[LLMStrategy] Running LLM agent action - {agent_action}"
+                f"[LLMStrategy] Running LLM agent action - {agent_action.action}"
             )
-            action = LLMAgentScan(
-                scan_host=agent_action.scan_host,
-                subnets_to_scan=agent_action.subnets_to_scan,
-                llm_interface=self.agent_interface,
-            )
+            action = self.agent_registry.get_llm_agent_action(agent_action.action)
             events = await self.high_level_action_orchestrator.run_action(action)
             return False
 
@@ -107,6 +103,7 @@ class LLMStrategy(IncalmoStrategy, ABC):
         else:
             self.cur_step += 1
             return False
+    
 
     async def llm_request(self) -> bool:
         try:
@@ -274,7 +271,6 @@ def get_agent_string(agents: list[Agent]) -> str:
     for agent in agents:
         agent_str += f"host: {agent.paw}, user: {agent.username}, ip: {agent.host_ip_addrs}, paw: {agent.paw}\n"
     return agent_str
-
 
 def get_all_action_classes():
     """Dynamically discover and return all High and Low level action classes"""

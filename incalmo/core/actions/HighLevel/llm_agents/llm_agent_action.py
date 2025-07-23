@@ -2,6 +2,12 @@ from abc import abstractmethod, ABC
 from incalmo.core.actions.high_level_action import HighLevelAction
 from incalmo.core.strategies.llm.interfaces.llm_agent_interface import LLMAgentInterface
 
+from pydantic import BaseModel
+from typing import Dict, Any
+
+class LLMAgentActionData(BaseModel):
+    action: str
+    params: Dict[str, Any]
 
 class LLMAgentAction(HighLevelAction, ABC):
     def __init__(self, llm_interface: LLMAgentInterface) -> None:
@@ -15,6 +21,12 @@ class LLMAgentAction(HighLevelAction, ABC):
         """
         Returns the preprompt string.
         """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def from_params(cls, params: Dict[str, Any], llm_interface: LLMAgentInterface) -> 'LLMAgentAction':
+        """Create instance from params dictionary"""
         pass
 
     def get_llm_conversation(self) -> str:

@@ -35,11 +35,9 @@ class LLMFindInformation(LLMAgentAction):
     def __init__(
         self,
         host: Host,
-        user: str,
     ):
         super().__init__()
         self.host = host
-        self.user = user
 
     async def run(
         self,
@@ -49,7 +47,7 @@ class LLMFindInformation(LLMAgentAction):
         context: HighLevelContext,
     ) -> list[Event]:
         events = []
-        agent = self.host.get_agent_by_username(self.user)
+        agent = self.host.get_agent()
         if not agent:
             return events
 

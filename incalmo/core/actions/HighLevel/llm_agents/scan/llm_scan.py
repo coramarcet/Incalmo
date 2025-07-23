@@ -1,6 +1,7 @@
 import os
 from string import Template
 import json
+from typing import Any, Dict
 
 from incalmo.core.actions.high_level_action import HighLevelAction
 from incalmo.core.actions.HighLevel.llm_agents.llm_agent_action import (
@@ -37,7 +38,15 @@ class LLMAgentScan(LLMAgentAction):
         self.llm_interface = llm_interface
         self.llm_interface.set_preprompt(self.get_preprompt())
         super().__init__(llm_interface)
-
+    
+    @classmethod
+    def from_params(cls, params: Dict[str, Any], llm_interface: LLMAgentInterface) -> 'LLMAgentScan':
+        scan_host = llm_interface.environment_state_service.network.find_host_by_ip(
+            params["scan_host"]
+        )
+        subnets_to_scan = [llm_interface.environment_state_service.network.find_subnet_by_host(scan_host)]
+        return cls(scan_host, subnets_to_scan, llm_interface)
+    
     async def run(
         self,
         low_level_action_orchestrator: LowLevelActionOrchestrator,

@@ -274,7 +274,7 @@ def get_hosts():
     ), 200
 
 
-# Add LLM Agent Action
+# Add LLM Agent Action to queue
 @app.route("/start_llm_agent_action", methods=["POST"])
 def add_llm_agent_action():
     try:
@@ -283,10 +283,9 @@ def add_llm_agent_action():
         if not json_data or "action" not in json_data:
             return jsonify({"error": "Invalid request data"}), 400
 
-        action = json_data["action"]
-        llm_agent_actions.append(action)
+        llm_agent_actions.append(json_data)
 
-        return jsonify({"status": "success", "message": f"Action {action} added"}), 200
+        return jsonify({"status": "success", "message": f"Action {json_data['action']} added"}), 200
 
     except json.JSONDecodeError:
         return jsonify({"error": "Invalid JSON data"}), 400
@@ -301,7 +300,7 @@ def get_llm_agent_action():
         return jsonify({"error": "No LLM Agent actions in queue"}), 404
 
     action = llm_agent_actions.pop(0)
-    return jsonify({"action": action}), 200
+    return jsonify(action), 200
 
 
 @app.route("/agent/delete/<paw>", methods=["DELETE"])
