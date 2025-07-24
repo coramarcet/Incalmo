@@ -8,13 +8,16 @@ import {
     Card,
     CardContent,
     Popover,
+    Button,
 } from '@mui/material';
 import {
     Computer,
     Security,
+    Radar
 } from '@mui/icons-material';
 
 import { Host, HostNodeProps } from '../types';
+import { useLLMAgentAction } from '../hooks/useLLMAgentAction'
 
 const getHostDisplayName = (host: Host): string => {
     if (host.hostname && host.hostname.trim()) {
@@ -32,6 +35,11 @@ const getHostDisplayName = (host: Host): string => {
 const HostNode = React.memo(({ data }: HostNodeProps) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const [showPopover, setShowPopover] = useState(false);
+    const [showButtons, setShowButtons] = useState(false);
+
+    const { scanHost, loading, error } = useLLMAgentAction();
+    const isScanning = data.ip_addresses && data.ip_addresses[0] ? 
+        loading[data.ip_addresses[0]] : false;
 
     const handleMouseEnter = (event: MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -43,6 +51,9 @@ const HostNode = React.memo(({ data }: HostNodeProps) => {
         setAnchorEl(null);
     };
 
+    const handleNodeOnClick = (e: MouseEvent<HTMLElement>) => {
+       setShowButtons(!showButtons)
+    };
     const displayName = getHostDisplayName(data);
 
     return (
@@ -81,6 +92,7 @@ const HostNode = React.memo(({ data }: HostNodeProps) => {
                 }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
+                onClick={handleNodeOnClick}
             >
                 <CardContent sx={{ p: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -128,6 +140,28 @@ const HostNode = React.memo(({ data }: HostNodeProps) => {
                     </Box>
                 </CardContent>
             </Card>
+
+            {showButtons && (
+                <Box sx={{ 
+                    position: 'absolute', 
+                    right: -90, 
+                    top: 'calc(50% - 18px)',
+                    zIndex: 1000 
+                }}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        startIcon={<Radar />}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            scanHost(data);
+                        }}
+                    >
+                        Scan
+                    </Button>
+                </Box>
+            )}
 
             <Popover
                 open={showPopover}

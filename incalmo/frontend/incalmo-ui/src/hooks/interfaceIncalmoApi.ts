@@ -65,10 +65,13 @@ export const useIncalmoApi = () => {
   const [llmLogs, setLLMLogs] = useState<string[]>([]);
   const [llmStreamConnected, setLLMStreamConnected] = useState<boolean>(false);
   const [llmStreamError, setLLMStreamError] = useState<string | null>(null);
-  
+  const [llmAgentLogs, setLLMAgentLogs] = useState<string[]>([]);
+  const [llmAgentStreamConnected, setLLMAgentStreamConnected] = useState<boolean>(false);
+  const [llmAgentStreamError, setLLMAgentStreamError] = useState<string | null>(null);
 
   const actionEventSourceRef = useRef<EventSource | null>(null);
   const llmEventSourceRef = useRef<EventSource | null>(null);
+  const llmAgentEventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     fetchAgents();
@@ -93,6 +96,10 @@ export const useIncalmoApi = () => {
       if (llmEventSourceRef.current) {
         llmEventSourceRef.current.close();
         llmEventSourceRef.current = null;
+      }
+      if (llmAgentEventSourceRef.current) {
+        llmAgentEventSourceRef.current.close();
+        llmAgentEventSourceRef.current = null;
       }
     };
   }, []);
@@ -121,6 +128,18 @@ export const useIncalmoApi = () => {
       return response.data;
     } catch (error) {
       console.error('Failed to send command to agent:', error);
+      throw error;
+    }
+  };
+
+  const sendLLMAgentAction = async (action: string, params: Record<string, any>): Promise<void> => {
+    try {
+      const response = await api.post('/start_llm_agent_action', {
+        action,
+        params
+      });
+    } catch (error) {
+      console.error('Failed to send LLM agent action:', error);
       throw error;
     }
   };
@@ -178,6 +197,7 @@ export const useIncalmoApi = () => {
       setTimeout(() => {
         connectToActionLogStream();
         connectToLLMLogStream();
+        connectToLLMAgentLogStream();
       }, 5000);
 
     } catch (error: any) {
@@ -341,6 +361,51 @@ const fetchHosts = async () => {
     }
   };
 
+  const connectToLLMAgentLogStream = () => {
+    if (llmAgentEventSourceRef.current) {
+      llmAgentEventSourceRef.current.close();
+    }
+
+    try {
+      const eventSource = new EventSource(`${API_BASE_URL}/stream_llm_agent_logs`);
+      llmAgentEventSourceRef.current = eventSource;
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = event.data;
+          
+          setLLMAgentLogs(prevLogs => {
+          const newLogs = [...prevLogs, data];
+          if (newLogs.length > 200) {
+            return newLogs.slice(-200);
+          }
+          return newLogs;
+        });
+        } catch (e) {
+          console.error('Error parsing LLM Agent log data:', e);
+        }
+      };
+      
+      eventSource.onopen = () => {
+        setLLMAgentStreamConnected(true);
+        setLLMAgentStreamError(null);
+      };
+      
+      eventSource.onerror = () => {
+        setLLMAgentStreamConnected(false);
+        setLLMAgentStreamError('Connection to LLM Agent log stream failed. Will try to reconnect...');
+
+        setTimeout(() => {
+          if (llmAgentEventSourceRef.current === eventSource) {
+            connectToLLMAgentLogStream();
+          }
+        }, 5000);
+      };
+    } catch (error) {
+      console.error('Failed to connect to log stream:', error);
+      setLLMAgentStreamError('Failed to establish log stream connection');
+    }
+  };
 
   return {
     selectedStrategy,
@@ -361,6 +426,9 @@ const fetchHosts = async () => {
     llmLogs,
     llmStreamConnected,
     llmStreamError,
+    llmAgentLogs,
+    llmAgentStreamConnected,
+    llmAgentStreamError,
     
     // Actions
     setSelectedStrategy,
@@ -372,6 +440,7 @@ const fetchHosts = async () => {
     fetchRunningStrategies,
     fetchStrategies,
     fetchHosts,
+    sendLLMAgentAction,
     getStatusColor
   };
 };

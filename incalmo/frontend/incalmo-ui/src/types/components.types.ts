@@ -55,6 +55,8 @@ export interface TimelineGraphProps {
 
 export interface HostNodeProps {
   data: Host;
+  isSelected?: boolean;
+  onClick?: () => void;
 }
 
 export interface HighLevelActionNodeProps {
