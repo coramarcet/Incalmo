@@ -90,5 +90,3 @@ class LLMAgentInterface:
             self.conversation[0]["content"] = preprompt
         else:
             self.conversation.append({"role": "system", "content": preprompt})
-
-    

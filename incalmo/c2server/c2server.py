@@ -24,6 +24,7 @@ from pathlib import Path
 import os
 from typing import Dict
 
+
 from incalmo.c2server.celery.celery_app import make_celery
 from incalmo.c2server.celery.celery_tasks import run_incalmo_strategy_task
 from incalmo.c2server.celery.celery_worker import celery_worker
@@ -285,7 +286,9 @@ def add_llm_agent_action():
 
         llm_agent_actions.append(json_data)
 
-        return jsonify({"status": "success", "message": f"Action {json_data['action']} added"}), 200
+        return jsonify(
+            {"status": "success", "message": f"Action {json_data['action']} added"}
+        ), 200
 
     except json.JSONDecodeError:
         return jsonify({"error": "Invalid JSON data"}), 400

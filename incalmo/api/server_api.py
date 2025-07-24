@@ -67,7 +67,7 @@ class C2ApiClient:
             return LLMAgentActionData(**action_data)
         else:
             return None
-        
+
     def send_command(self, low_level_action: LowLevelAction) -> CommandResult:
         """Send a command to an agent and poll for results."""
         # Send the command
@@ -128,7 +128,7 @@ class C2ApiClient:
             return response.json()
         else:
             raise Exception(f"Failed to report environment state: {response.text}")
-    
+
     def get_queued_llm_agent_action(self):
         """Fetch all queued LLM Agent action."""
         response = requests.get(f"{self.server_url}/get_llm_agent_action")

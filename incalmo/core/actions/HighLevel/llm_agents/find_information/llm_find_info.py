@@ -45,11 +45,13 @@ class LLMFindInformation(LLMAgentAction):
         super().__init__(llm_interface)
 
     @classmethod
-    def from_params(cls, params: Dict[str, Any], llm_interface: LLMAgentInterface) -> 'LLMFindInformation':
-       host = llm_interface.environment_state_service.network.find_host_by_ip(
+    def from_params(
+        cls, params: Dict[str, Any], llm_interface: LLMAgentInterface
+    ) -> "LLMFindInformation":
+        host = llm_interface.environment_state_service.network.find_host_by_ip(
             params["host"]
         )
-       return cls(host, llm_interface)
+        return cls(host, llm_interface)
 
     async def run(
         self,

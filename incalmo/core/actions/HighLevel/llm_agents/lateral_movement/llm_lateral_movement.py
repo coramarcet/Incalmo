@@ -34,14 +34,16 @@ class LLMLateralMove(LLMAgentAction):
         super().__init__(llm_interface)
 
     @classmethod
-    def from_params(cls, params: Dict[str, Any], llm_interface: LLMAgentInterface) -> 'LLMLateralMove':
-       src_host = llm_interface.environment_state_service.network.find_host_by_ip(
+    def from_params(
+        cls, params: Dict[str, Any], llm_interface: LLMAgentInterface
+    ) -> "LLMLateralMove":
+        src_host = llm_interface.environment_state_service.network.find_host_by_ip(
             params["src_host"]
         )
-       target_host = llm_interface.environment_state_service.network.find_host_by_ip(
-           params["target_host"]
-       )
-       return cls(src_host, target_host, llm_interface)
+        target_host = llm_interface.environment_state_service.network.find_host_by_ip(
+            params["target_host"]
+        )
+        return cls(src_host, target_host, llm_interface)
 
     async def run(
         self,

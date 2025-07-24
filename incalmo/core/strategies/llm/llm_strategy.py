@@ -42,7 +42,10 @@ class LLMStrategy(IncalmoStrategy, ABC):
         self.agent_logger = self.logging_service.setup_logger(logger_name="llm_agent")
 
         # LLM Agent Interface and registry
-        self.agent_interface = LLMAgentInterface(logger=self.agent_logger, environment_state_service=self.environment_state_service)
+        self.agent_interface = LLMAgentInterface(
+            logger=self.agent_logger,
+            environment_state_service=self.environment_state_service,
+        )
         self.agent_registry = LLMAgentRegistry()
         # Logging Start
         self.logger.info(
@@ -92,7 +95,9 @@ class LLMStrategy(IncalmoStrategy, ABC):
             self.agent_logger.info(
                 f"[LLMStrategy] Running LLM agent action - {agent_action.action}"
             )
-            action = self.agent_registry.get_llm_agent_action(agent_action).from_params(agent_action.params, self.agent_interface)
+            action = self.agent_registry.get_llm_agent_action(agent_action).from_params(
+                agent_action.params, self.agent_interface
+            )
             events = await self.high_level_action_orchestrator.run_action(action)
             return False
 
@@ -103,7 +108,6 @@ class LLMStrategy(IncalmoStrategy, ABC):
         else:
             self.cur_step += 1
             return False
-    
 
     async def llm_request(self) -> bool:
         try:
@@ -271,6 +275,7 @@ def get_agent_string(agents: list[Agent]) -> str:
     for agent in agents:
         agent_str += f"host: {agent.paw}, user: {agent.username}, ip: {agent.host_ip_addrs}, paw: {agent.paw}\n"
     return agent_str
+
 
 def get_all_action_classes():
     """Dynamically discover and return all High and Low level action classes"""

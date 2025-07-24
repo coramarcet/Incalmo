@@ -10,7 +10,10 @@ from datetime import datetime
 
 
 def serialize(self):
-    from incalmo.core.strategies.llm.interfaces.llm_agent_interface import LLMAgentInterface
+    from incalmo.core.strategies.llm.interfaces.llm_agent_interface import (
+        LLMAgentInterface,
+    )
+
     IGNORE_OBJECTS = [logging.Logger, LLMAgentInterface]
 
     dict_format = dict()

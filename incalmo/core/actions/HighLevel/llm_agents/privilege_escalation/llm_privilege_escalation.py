@@ -27,19 +27,20 @@ class LLMPrivilegeEscalate(LLMAgentAction):
         host: Host,
         llm_interface: LLMAgentInterface,
     ):
-        super().__init__()
         self.host = host
         self.llm_interface = llm_interface
         self.llm_interface.set_preprompt(self.get_preprompt())
         super().__init__(llm_interface)
 
     @classmethod
-    def from_params(cls, params: Dict[str, Any], llm_interface: LLMAgentInterface) -> 'LLMPrivilegeEscalate':
-       host = llm_interface.environment_state_service.network.find_host_by_ip(
+    def from_params(
+        cls, params: Dict[str, Any], llm_interface: LLMAgentInterface
+    ) -> "LLMPrivilegeEscalate":
+        host = llm_interface.environment_state_service.network.find_host_by_ip(
             params["host"]
         )
-       return cls(host, llm_interface)
-    
+        return cls(host, llm_interface)
+
     async def run(
         self,
         low_level_action_orchestrator: LowLevelActionOrchestrator,
