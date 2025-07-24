@@ -23,7 +23,7 @@ class LLMAgentInterface:
 
         # Prepare the messages for the LLM
         self.conversation.append({"role": "user", "content": message})
-        self.logger.info(f"Incalmo's response: \n{message}")
+        self.logger.info(f"Incalmo's response: \n<response>\n{message}\n</response>\n")
 
         # Get the response from the LLM
         response = self.get_response_from_model(
