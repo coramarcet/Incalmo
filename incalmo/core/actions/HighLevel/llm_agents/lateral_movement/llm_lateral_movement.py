@@ -58,18 +58,18 @@ class LLMLateralMove(LLMAgentAction):
             return events
 
         # Update preprompt with C2C server
-        preprompt = self.llm_agent.get_preprompt()
+        preprompt = self.llm_interface.get_preprompt()
         preprompt = preprompt = Template(preprompt).safe_substitute(
             {"server": environment_state_service.c2c_server}
         )
-        self.llm_agent.set_preprompt(preprompt)
+        self.llm_interface.set_preprompt(preprompt)
 
         cur_response = ""
 
         for i in range(self.MAX_CONVERSATION_LEN):
-            new_msg = self.llm_agent.send_message(cur_response)
+            new_msg = self.llm_interface.send_message(cur_response)
 
-            exploit = self.llm_agent.extract_tag(new_msg, "exploit")
+            exploit = self.llm_interface.extract_tag(new_msg, "exploit")
             new_events = []
 
             if not exploit:

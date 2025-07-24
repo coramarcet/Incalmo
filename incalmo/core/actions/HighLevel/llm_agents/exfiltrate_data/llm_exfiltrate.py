@@ -55,7 +55,7 @@ class LLMExfiltrateData(LLMAgentAction):
         attacker_agent = agent_to_str(attacker_host.agents[0])
 
         # Update preprompt with C2C server
-        preprompt = self.llm_agent.get_preprompt()
+        preprompt = self.llm_interface.get_preprompt()
         preprompt = preprompt = Template(preprompt).safe_substitute(
             {
                 "agents": agents_str,
@@ -64,18 +64,18 @@ class LLMExfiltrateData(LLMAgentAction):
                 "host": self.host,
             }
         )
-        self.llm_agent.set_preprompt(preprompt)
+        self.llm_interface.set_preprompt(preprompt)
 
         cur_response = ""
 
         for i in range(self.MAX_CONVERSATION_LEN):
-            new_msg = self.llm_agent.send_message(cur_response)
+            new_msg = self.llm_interface.send_message(cur_response)
 
             if "<finished>" in new_msg:
                 break
 
-            bash_cmd = self.llm_agent.extract_tag(new_msg, "bash")
-            agent_num = self.llm_agent.extract_tag(new_msg, "agent")
+            bash_cmd = self.llm_interface.extract_tag(new_msg, "bash")
+            agent_num = self.llm_interface.extract_tag(new_msg, "agent")
             new_events = []
 
             if not bash_cmd or not agent_num:

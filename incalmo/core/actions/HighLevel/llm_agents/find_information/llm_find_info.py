@@ -67,9 +67,9 @@ class LLMFindInformation(LLMAgentAction):
 
         cur_response = ""
         for i in range(self.MAX_CONVERSATION_LEN):
-            new_msg = self.llm_agent.send_message(cur_response)
+            new_msg = self.llm_interface.send_message(cur_response)
 
-            bash_cmd = self.llm_agent.extract_tag(new_msg, "bash")
+            bash_cmd = self.llm_interface.extract_tag(new_msg, "bash")
             if not bash_cmd or "<finished>" in new_msg:
                 break
 
@@ -84,8 +84,8 @@ class LLMFindInformation(LLMAgentAction):
                 cur_response = "Bash command output:\n" + bash_output
 
         # Get final scan results
-        raw_scan_report = self.llm_agent.extract_tag(
-            self.llm_agent.get_last_message(), "report"
+        raw_scan_report = self.llm_interface.extract_tag(
+            self.llm_interface.get_last_message(), "report"
         )
 
         events = []

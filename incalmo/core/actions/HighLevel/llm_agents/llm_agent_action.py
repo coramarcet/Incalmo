@@ -3,6 +3,7 @@ from typing import Any, Dict
 from incalmo.core.actions.high_level_action import HighLevelAction
 from incalmo.core.strategies.llm.interfaces.llm_agent_interface import LLMAgentInterface
 
+
 class LLMAgentAction(HighLevelAction, ABC):
     def __init__(self, llm_interface: LLMAgentInterface) -> None:
         super().__init__()
@@ -19,7 +20,9 @@ class LLMAgentAction(HighLevelAction, ABC):
 
     @classmethod
     @abstractmethod
-    def from_params(cls, params: Dict[str, Any], llm_interface: LLMAgentInterface) -> 'LLMAgentAction':
+    def from_params(
+        cls, params: Dict[str, Any], llm_interface: LLMAgentInterface
+    ) -> "LLMAgentAction":
         """Create instance from params dictionary"""
         pass
 
