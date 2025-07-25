@@ -38,6 +38,7 @@ export interface Host {
   infected?: boolean;
   infected_by?: string;
   agents?: string[];
+  onLLMAgentStart?: (hostIp: string) => void;
 }
 
 export interface NetworkGraphProps {
@@ -46,6 +47,7 @@ export interface NetworkGraphProps {
   error?: string;
   lastUpdate?: string;
   onRefresh: () => void;
+  onLLMAgentStart?: (hostIp: string) => void;
 }
 
 export interface TimelineGraphProps {
@@ -57,6 +59,7 @@ export interface HostNodeProps {
   data: Host;
   isSelected?: boolean;
   onClick?: () => void;
+  onLLMAgentStart?: (hostIp: string) => void;
 }
 
 export interface HighLevelActionNodeProps {
@@ -89,4 +92,19 @@ export interface LLMLogsProps {
   logs: string[];
   isConnected: boolean;
   error: string | null;
+}
+
+export interface LLMAgentLogsProps {
+  logs: string[];
+  isConnected: boolean;
+  error: string | null;
+  onClose?: () => void;
+  hostIp?: string | null;
+}
+
+export type LLMAgentLogEntryType = 'bash' | 'response';
+
+export interface LLMAgentLogEntry {
+  type: LLMAgentLogEntryType;
+  content: string;
 }

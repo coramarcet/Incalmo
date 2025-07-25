@@ -6,12 +6,13 @@ import { getHostId } from '../utils/graphUtils';
 interface UseGraphDataProps {
     hosts: Host[];
     nodePositions: Map<string, { x: number; y: number }>;
+    onLLMAgentStart?: (hostIp: string) => void;
 }
 
 /**
  * Custom hook for transforming hosts data into ReactFlow nodes and edges
  */
-export const useGraphData = ({ hosts, nodePositions }: UseGraphDataProps) => {
+export const useGraphData = ({ hosts, nodePositions, onLLMAgentStart }: UseGraphDataProps) => {
     // Convert hosts to ReactFlow nodes
     const hostNodes = useMemo((): Node<Host>[] => {
         if (!hosts || hosts.length === 0) return [];
@@ -26,13 +27,13 @@ export const useGraphData = ({ hosts, nodePositions }: UseGraphDataProps) => {
                 id: hostId,
                 type: 'hostNode',
                 position: position,
-                data: { ...host },
+                data: { ...host, onLLMAgentStart },
                 draggable: true,
                 sourcePosition: Position.Bottom,
                 targetPosition: Position.Top,
             } as Node<Host>;
         });
-    }, [hosts, nodePositions]);
+    }, [hosts, nodePositions, onLLMAgentStart]);
 
     // Convert infection relationships to ReactFlow edges
     const infectionEdges = useMemo((): Edge[] => {

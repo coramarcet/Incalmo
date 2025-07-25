@@ -13,10 +13,14 @@ import NetworkGraph from './components/NetworkGraph';
 import ActionLogs from './components/ActionLogs';
 import LLMLogs from './components/LLMLogs';
 import TimelineGraph from './components/TimelineGraph';
+import LLMAgentLogs from './components/LLMAgentLogs';
 
 const App = () => {
 
   const [selectedGraphTab, setSelectedGraphTab] = useState(0);
+  const [showAgentLogs, setShowAgentLogs] = useState(false);
+  const [currentAgentIp, setCurrentAgentIp] = useState<string | null>(null);
+  
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedGraphTab(newValue);
   };
@@ -40,6 +44,9 @@ const App = () => {
     llmLogs,
     llmStreamConnected,
     llmStreamError,
+    llmAgentLogs,
+    llmAgentStreamConnected,
+    llmAgentStreamError,
     fetchHosts,
     deleteAgent,
     sendCommandToAgent,
@@ -47,6 +54,7 @@ const App = () => {
     startStrategy,
     stopStrategy,
     fetchRunningStrategies,
+    sendLLMAgentAction,
     getStatusColor
   } = useIncalmoApi();
 
@@ -138,6 +146,10 @@ const App = () => {
                         error={hostsError}
                         lastUpdate={lastHostsUpdate}
                         onRefresh={fetchHosts}
+                        onLLMAgentStart={(hostIp: string) => {
+                            setCurrentAgentIp(hostIp);
+                            setShowAgentLogs(true);
+                          }}
                       />
                     ) : (
                         <TimelineGraph 
@@ -168,21 +180,35 @@ const App = () => {
                 borderRadius: 2,
                 overflow: 'hidden'
               }}>
-                <Box sx={{ height: '50%', overflow: 'hidden' }}>
-                  <ActionLogs
-                    logs={lowLevelLogs}
-                    isConnected={actionStreamConnected}
-                    error={actionStreamError}
-                  />
+                {!showAgentLogs ? (
+                  <>
+                    <Box sx={{ height: '50%', overflow: 'hidden' }}>
+                      <ActionLogs
+                        logs={lowLevelLogs}
+                        isConnected={actionStreamConnected}
+                        error={actionStreamError}
+                      />
+                    </Box>
+                    <Divider />
+                    <Box sx={{ height: '50%', overflow: 'hidden' }}>
+                      <LLMLogs
+                        logs={llmLogs}
+                        isConnected={llmStreamConnected}
+                        error={llmStreamError}
+                      />
+                    </Box>
+                  </>
+                ) : (
+                  <Box sx={{ height: '100%', overflow: 'hidden' }}>
+                    <LLMAgentLogs
+                      logs={llmAgentLogs}
+                      isConnected={llmAgentStreamConnected}
+                      error={llmAgentStreamError}
+                      hostIp={currentAgentIp}
+                      onClose={() => setShowAgentLogs(false)}
+                    />
                 </Box>
-                <Divider />
-                <Box sx={{ height: '50%', overflow: 'hidden' }}>
-                  <LLMLogs
-                    logs={llmLogs}
-                    isConnected={llmStreamConnected}
-                    error={llmStreamError}
-                  />
-                </Box>
+                )}
               </Paper>
             </Box>
           </Box>

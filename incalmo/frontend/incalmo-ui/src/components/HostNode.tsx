@@ -37,7 +37,7 @@ const HostNode = React.memo(({ data }: HostNodeProps) => {
     const [showPopover, setShowPopover] = useState(false);
     const [showButtons, setShowButtons] = useState(false);
 
-    const { scanHost, loading, error } = useLLMAgentAction();
+    const { scanHost, loading, error } = useLLMAgentAction(data.onLLMAgentStart);
     const isScanning = data.ip_addresses && data.ip_addresses[0] ? 
         loading[data.ip_addresses[0]] : false;
 

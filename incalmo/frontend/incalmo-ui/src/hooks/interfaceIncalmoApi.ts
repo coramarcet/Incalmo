@@ -365,12 +365,14 @@ const fetchHosts = async () => {
     if (llmAgentEventSourceRef.current) {
       llmAgentEventSourceRef.current.close();
     }
+    
 
     try {
       const eventSource = new EventSource(`${API_BASE_URL}/stream_llm_agent_logs`);
       llmAgentEventSourceRef.current = eventSource;
 
       eventSource.onmessage = (event) => {
+        console.log("LLM AGENT LOG RECEIVED:", event.data);
         try {
           const data = event.data;
           

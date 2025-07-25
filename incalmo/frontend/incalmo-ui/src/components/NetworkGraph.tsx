@@ -31,7 +31,7 @@ const nodeTypes = {
   hostNode: HostNode,
 };
 
-const NetworkGraph = ({ hosts, loading, error, lastUpdate, onRefresh }: NetworkGraphProps) => {
+const NetworkGraph = ({ hosts, loading, error, lastUpdate, onRefresh, onLLMAgentStart }: NetworkGraphProps)=> {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -44,7 +44,8 @@ const NetworkGraph = ({ hosts, loading, error, lastUpdate, onRefresh }: NetworkG
   // Transform hosts data into graph nodes and edges
   const { nodes: hostNodes, edges: infectionEdges } = useGraphData({
     hosts,
-    nodePositions
+    nodePositions,
+    onLLMAgentStart
   });
 
   // Apply layout algorithm to position nodes

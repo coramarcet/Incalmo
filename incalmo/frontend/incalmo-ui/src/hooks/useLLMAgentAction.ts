@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useIncalmoApi } from './interfaceIncalmoApi';
 import { Host } from '../types';
 
-export const useLLMAgentAction = () => {
+export const useLLMAgentAction = (onLLMAgentStart?: (hostIp: string) => void) => {
   const api = useIncalmoApi();
   const [loading, setLoading] = useState<{[key: string]: boolean}>({});
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +15,9 @@ export const useLLMAgentAction = () => {
     }
 
     const targetIp = host.ip_addresses[0];
-    
+
+    if (onLLMAgentStart) onLLMAgentStart(targetIp);
+
     setLoading(prev => ({ ...prev, [targetIp]: true }));
     setError(null);
 
