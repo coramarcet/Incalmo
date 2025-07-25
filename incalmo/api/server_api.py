@@ -8,6 +8,7 @@ import time
 from incalmo.models.command_result import CommandResult
 from incalmo.models.command import Command, CommandStatus
 from incalmo.core.models.network import Network
+from incalmo.models.llm_agent_action_data import LLMAgentActionData
 
 
 class C2ApiClient:
@@ -57,6 +58,15 @@ class C2ApiClient:
             raise Exception(
                 f"Failed to get agents: {response.status_code} {response.text}"
             )
+
+    def get_llm_agent_action(self) -> LLMAgentActionData:
+        """Fetch the next LLM Agent action from the queue"""
+        response = requests.get(f"{self.server_url}/get_llm_agent_action")
+        if response.ok:
+            action_data = response.json()
+            return LLMAgentActionData(**action_data)
+        else:
+            return None
 
     def send_command(self, low_level_action: LowLevelAction) -> CommandResult:
         """Send a command to an agent and poll for results."""
@@ -118,6 +128,17 @@ class C2ApiClient:
             return response.json()
         else:
             raise Exception(f"Failed to report environment state: {response.text}")
+
+    def get_queued_llm_agent_action(self):
+        """Fetch all queued LLM Agent action."""
+        response = requests.get(f"{self.server_url}/get_llm_agent_action")
+        if response.ok:
+            action_data = response.json()
+            return LLMAgentActionData(**action_data)
+        else:
+            raise Exception(
+                f"Failed to get queued LLM Agent actions: {response.status_code} {response.text}"
+            )
 
     def incalmo_startup(self, config: AttackerConfig):
         """Start incalmo with full AttackerConfig"""

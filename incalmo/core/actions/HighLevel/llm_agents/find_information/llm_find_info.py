@@ -1,4 +1,6 @@
 import os
+from typing import Any, Dict
+from incalmo.core.strategies.llm.interfaces.llm_agent_interface import LLMAgentInterface
 from pydantic import ValidationError
 import json
 
@@ -35,11 +37,21 @@ class LLMFindInformation(LLMAgentAction):
     def __init__(
         self,
         host: Host,
-        user: str,
+        llm_interface: LLMAgentInterface,
     ):
-        super().__init__()
         self.host = host
-        self.user = user
+        self.llm_interface = llm_interface
+        self.llm_interface.set_preprompt(self.get_preprompt())
+        super().__init__(llm_interface)
+
+    @classmethod
+    def from_params(
+        cls, params: Dict[str, Any], llm_interface: LLMAgentInterface
+    ) -> "LLMFindInformation":
+        host = llm_interface.environment_state_service.network.find_host_by_ip(
+            params["host"]
+        )
+        return cls(host, llm_interface)
 
     async def run(
         self,
@@ -49,15 +61,15 @@ class LLMFindInformation(LLMAgentAction):
         context: HighLevelContext,
     ) -> list[Event]:
         events = []
-        agent = self.host.get_agent_by_username(self.user)
+        agent = self.host.get_agent()
         if not agent:
             return events
 
         cur_response = ""
         for i in range(self.MAX_CONVERSATION_LEN):
-            new_msg = self.llm_agent.send_message(cur_response)
+            new_msg = self.llm_interface.send_message(cur_response)
 
-            bash_cmd = self.llm_agent.extract_tag(new_msg, "bash")
+            bash_cmd = self.llm_interface.extract_tag(new_msg, "bash")
             if not bash_cmd or "<finished>" in new_msg:
                 break
 
@@ -72,8 +84,8 @@ class LLMFindInformation(LLMAgentAction):
                 cur_response = "Bash command output:\n" + bash_output
 
         # Get final scan results
-        raw_scan_report = self.llm_agent.extract_tag(
-            self.llm_agent.get_last_message(), "report"
+        raw_scan_report = self.llm_interface.extract_tag(
+            self.llm_interface.get_last_message(), "report"
         )
 
         events = []

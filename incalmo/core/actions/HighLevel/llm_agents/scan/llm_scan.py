@@ -1,6 +1,7 @@
 import os
 from string import Template
 import json
+from typing import Any, Dict
 
 from incalmo.core.actions.high_level_action import HighLevelAction
 from incalmo.core.actions.HighLevel.llm_agents.llm_agent_action import (
@@ -22,6 +23,7 @@ from incalmo.core.services import (
 
 from incalmo.core.models.network import ScanResults
 from incalmo.core.services.action_context import HighLevelContext
+from incalmo.core.strategies.llm.interfaces.llm_agent_interface import LLMAgentInterface
 
 
 class LLMAgentScan(LLMAgentAction):
@@ -29,10 +31,27 @@ class LLMAgentScan(LLMAgentAction):
         self,
         scan_host: Host,
         subnets_to_scan: list[Subnet],
+        llm_interface: LLMAgentInterface,
     ):
         self.scan_host = scan_host
         self.subnets_to_scan = subnets_to_scan
-        super().__init__()
+        self.llm_interface = llm_interface
+        self.llm_interface.set_preprompt(self.get_preprompt())
+        super().__init__(llm_interface)
+
+    @classmethod
+    def from_params(
+        cls, params: Dict[str, Any], llm_interface: LLMAgentInterface
+    ) -> "LLMAgentScan":
+        scan_host = llm_interface.environment_state_service.network.find_host_by_ip(
+            params["scan_host"]
+        )
+        subnets_to_scan = [
+            llm_interface.environment_state_service.network.find_subnet_by_host(
+                scan_host
+            )
+        ]
+        return cls(scan_host, subnets_to_scan, llm_interface)
 
     async def run(
         self,
@@ -46,12 +65,12 @@ class LLMAgentScan(LLMAgentAction):
         if not scan_agent:
             return events
 
-        cur_response = ""
+        cur_response = "Start the scan"
 
         for i in range(self.MAX_CONVERSATION_LEN):
-            new_msg = self.llm_agent.send_message(cur_response)
+            new_msg = self.llm_interface.send_message(cur_response)
 
-            bash_cmd = self.llm_agent.extract_tag(new_msg, "bash")
+            bash_cmd = self.llm_interface.extract_tag(new_msg, "bash")
             if not bash_cmd or "<finished>" in new_msg:
                 break
 
@@ -66,8 +85,8 @@ class LLMAgentScan(LLMAgentAction):
                 cur_response = "Bash command output:\n" + bash_output
 
         # Get final scan results
-        raw_scan_report = self.llm_agent.extract_tag(
-            self.llm_agent.get_last_message(), "report"
+        raw_scan_report = self.llm_interface.extract_tag(
+            self.llm_interface.get_last_message(), "report"
         )
 
         if raw_scan_report:

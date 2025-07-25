@@ -1,14 +1,15 @@
 from incalmo.core.strategies.llm.langchain_registry import LangChainRegistry
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from incalmo.core.services.config_service import ConfigService
+from incalmo.core.services import EnvironmentStateService
 
 
-class LLMAgent:
-    def __init__(self, preprompt: str):
+class LLMAgentInterface:
+    def __init__(self, logger, environment_state_service: EnvironmentStateService):
         # Initialize the conversation
-        self.conversation = [
-            {"role": "system", "content": preprompt},
-        ]
+        self.logger = logger
+        self.environment_state_service = environment_state_service
+        self.conversation = []
         self._registry = LangChainRegistry()
         self.execution_llm = ConfigService().get_config().execution_llm
 
@@ -22,14 +23,15 @@ class LLMAgent:
 
         # Prepare the messages for the LLM
         self.conversation.append({"role": "user", "content": message})
+        self.logger.info(f"Incalmo's response: \n<response>\n{message}\n</response>\n")
 
         # Get the response from the LLM
         response = self.get_response_from_model(
             model_name=self.execution_llm,
             messages=self.conversation,
         )
+        self.logger.info(f"LLM Agent's response: \n{response}")
 
-        # Add Claude's response to the conversation
         self.conversation.append({"role": "assistant", "content": response})
 
         return response
@@ -84,4 +86,7 @@ class LLMAgent:
         """
         Sets the preprompt string.
         """
-        self.conversation[0]["content"] = preprompt
+        if self.conversation:
+            self.conversation[0]["content"] = preprompt
+        else:
+            self.conversation.append({"role": "system", "content": preprompt})
