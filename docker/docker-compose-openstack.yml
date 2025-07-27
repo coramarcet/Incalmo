@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  attacker:
+    build:
+      context: ../
+      dockerfile: docker/attacker/openstack.Dockerfile
+    env_file:
+      - ../.env
+    volumes:
+      - ../:/incalmo
+      - frontend-ignore:/incalmo/incalmo/frontend
+      - venv-volume:/incalmo/.venv
+    network_mode: "host"
+
+
+volumes:
+  venv-volume:
+  frontend-ignore:
