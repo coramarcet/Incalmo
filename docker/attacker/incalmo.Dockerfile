@@ -24,7 +24,6 @@ WORKDIR /incalmo
 # Install dependencies
 RUN uv sync
 
-ENV SERVER_IP=localhost:8888
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/incalmo
 
