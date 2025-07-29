@@ -177,7 +177,6 @@ def beacon():
     if paw not in agents and paw not in agent_deletion_queue:
         # Validate all required fields are present and not None
         if all(json_data.get(field) not in (None, "", []) for field in required_fields):
-            print(f"New agent: {paw}")
             agents[paw] = {"paw": paw, "info": data, "infected_by": None}
         else:
             print(
@@ -205,7 +204,6 @@ def beacon():
         if "stderr" in decoded_result:
             decoded_result["stderr"] = decode_base64(decoded_result["stderr"])
         decoded_results.append(decoded_result)
-    print(f"[DEBUG] Agent {paw} beaconed with results: {decoded_results}")
     # Get next command from queue if available
     instructions = []
     if command_queues[paw]:
@@ -225,8 +223,6 @@ def beacon():
         "watchdog": int(60),
         "instructions": json.dumps([json.dumps(i.display) for i in instructions]),
     }
-
-    print(f"[DEBUG] Sending response to agent {paw}: {response}")
 
     encoded_response = encode_base64(response)
     return encoded_response
