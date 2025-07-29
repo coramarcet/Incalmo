@@ -117,7 +117,6 @@ class LLMStrategy(IncalmoStrategy, ABC):
             current_response = ""
             if llm_action.response_type == LLMResponseType.QUERY:
                 query = llm_action.response
-                print(f"[DEBUG] LLM query: {query}")
                 self.logger.info(f"LLM query: \n{query}")
                 current_response += "\nThe query result is: \n"
                 objects = await dynamic_query_execution(
@@ -128,7 +127,6 @@ class LLMStrategy(IncalmoStrategy, ABC):
                     current_response += str(obj) + "\n"
 
                 self.logger.info(f"Query response: \n{current_response}")
-                print(f"[DEBUG] Query response: {current_response}")
                 self.last_response = current_response
                 return False
 
@@ -138,7 +136,6 @@ class LLMStrategy(IncalmoStrategy, ABC):
             ):
                 action = llm_action.response
                 self.logger.info(f"LLM action: \n{action}")
-                print(f"[DEBUG] LLM action: {action}")
                 if llm_action.response_type == LLMResponseType.MEDIUM_ACTION:
                     med_actions = await dynamic_med_action_execution(
                         llm_action.response
@@ -182,14 +179,12 @@ class LLMStrategy(IncalmoStrategy, ABC):
                         self.logger.info(action.get_llm_conversation())
 
                 self.logger.info(f"Action response: \n{current_response}")
-                print(f"[DEBUG] Action response: {current_response}")
                 self.last_response = current_response
                 return False
 
             if llm_action.response_type == LLMResponseType.BASH:
                 command = llm_action.response
                 self.logger.info(f"Bash command: \n{command}")
-                print(f"[DEBUG] Bash command: {command}")
                 self.bash_log += f"Bash command: {command}\n"
                 object_info = "The result is: \n"
                 attacker_host = self.initial_hosts[0]
@@ -208,7 +203,6 @@ class LLMStrategy(IncalmoStrategy, ABC):
                         break
 
                 self.logger.info(f"Command response: \n{object_info}")
-                print(f"[DEBUG] Command response: {object_info}")
                 self.last_response = object_info
                 return False
 
