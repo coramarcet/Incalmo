@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   attacker:
     build:
@@ -10,9 +9,23 @@ services:
       - ../:/incalmo
       - frontend-ignore:/incalmo/incalmo/frontend
       - venv-volume:/incalmo/.venv
-    network_mode: "host"
-
+      - /home/lakshmi/perry_key.pem:/root/perry_key.pem:ro
+    networks:
+      custom_net:
+        ipv4_address: 172.28.1.225
+    ports:
+      - 8888:8888
+      - "6379:6379"
+      - 5678:5678
 
 volumes:
   venv-volume:
   frontend-ignore:
+
+networks:
+  custom_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1

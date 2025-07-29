@@ -196,6 +196,16 @@ def beacon():
 
             command_results[command_id].result = result
             command_results[command_id].status = CommandStatus.COMPLETED
+
+    decoded_results = []
+    for result in results:
+        decoded_result = result.copy()
+        if "output" in decoded_result:
+            decoded_result["output"] = decode_base64(decoded_result["output"])
+        if "stderr" in decoded_result:
+            decoded_result["stderr"] = decode_base64(decoded_result["stderr"])
+        decoded_results.append(decoded_result)
+    print(f"[DEBUG] Agent {paw} beaconed with results: {decoded_results}")
     # Get next command from queue if available
     instructions = []
     if command_queues[paw]:
@@ -215,6 +225,8 @@ def beacon():
         "watchdog": int(60),
         "instructions": json.dumps([json.dumps(i.display) for i in instructions]),
     }
+
+    print(f"[DEBUG] Sending response to agent {paw}: {response}")
 
     encoded_response = encode_base64(response)
     return encoded_response
