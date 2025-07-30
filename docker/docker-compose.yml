@@ -25,12 +25,12 @@ services:
     env_file:
       - ../.env
     environment:
-      - SERVER_IP=192.168.199.10:8888
+      - SERVER_IP = localhost
+      - MODE = docker
     volumes:
       - ../:/incalmo
       - frontend-ignore:/incalmo/incalmo/frontend
       - venv-volume:/incalmo/.venv
-      - /home/lakshmi/perry_key.pem:/root/perry_key.pem:ro
     networks:
       attacker_network:
         ipv4_address: 192.168.199.10
