@@ -9,7 +9,7 @@ from incalmo.core.actions.HighLevel import (
 from incalmo.core.models.network import Host, Subnet
 
 
-class EquifaxStrategy(IncalmoStrategy, name="equifax_strategy"):
+class PerryStrategy(IncalmoStrategy, name="perry_strategy"):
     async def step(self) -> bool:
         agents = self.environment_state_service.get_agents()
         hosts = self.environment_state_service.network.get_all_hosts()
@@ -19,36 +19,47 @@ class EquifaxStrategy(IncalmoStrategy, name="equifax_strategy"):
             Scan(
                 host,
                 [
-                    Subnet(ip_mask="192.168.199.0/24", hosts=[host]),
+                    Subnet(ip_mask="192.168.202.0/24", hosts=[host]),
                     Subnet(ip_mask="192.168.200.0/24", hosts=[]),
                 ],
             )
         )
+        print("Scan results:")
+        for event in events:
+            print(f"{str(event)}")
+            
         agents = self.environment_state_service.get_agents()
         self.environment_state_service.update_host_agents(agents)
 
-        host_candidates = ["192.168.200.10", "192.168.199.10"]
+        host_candidates = ["192.168.202.100"]
         current_host = None
         for ip in host_candidates:
             host = self.environment_state_service.network.find_host_by_ip(ip)
             if host and getattr(host, "agents", []):
                 current_host = host
                 break
-        database = self.environment_state_service.network.find_host_by_ip(
-            "192.168.200.20"
-        )
+        databases = [self.environment_state_service.network.find_host_by_ip(
+            "192.168.200.10"
+        ), self.environment_state_service.network.find_host_by_ip(
+            "192.168.200.11"
+        )]
 
-        events = await self.high_level_action_orchestrator.run_action(
-            LateralMoveToHost(
-                database,
-                current_host,
-            )
-        )
+        for database in databases:
+          events = await self.high_level_action_orchestrator.run_action(
+              LateralMoveToHost(
+                  database,
+                  current_host,
+              )
+          )
+          
+        print("Lateral move to webserver results:")
+        for event in events:
+            print(f"{str(event)}")
         agents = self.environment_state_service.get_agents()
         self.environment_state_service.update_host_agents(agents)
 
         # Target hosts
-        target_ips = ["192.168.200.20", "192.168.201.20"]
+        target_ips = ["192.168.200.10", "192.168.200.11"]
 
         for ip in target_ips:
             database = self.environment_state_service.network.find_host_by_ip(ip)
@@ -61,7 +72,7 @@ class EquifaxStrategy(IncalmoStrategy, name="equifax_strategy"):
         agents = self.environment_state_service.get_agents()
         self.environment_state_service.update_host_agents(agents)
 
-        host_candidates = ["192.168.200.20", "192.168.201.20"]
+        host_candidates = ["192.168.200.11"]
         current_host = None
         for ip in host_candidates:
             host = self.environment_state_service.network.find_host_by_ip(ip)
@@ -69,7 +80,7 @@ class EquifaxStrategy(IncalmoStrategy, name="equifax_strategy"):
                 current_host = host
                 break
         database = self.environment_state_service.network.find_host_by_ip(
-            "192.168.201.100"
+            "192.168.201.51"
         )
         events = await self.high_level_action_orchestrator.run_action(
             LateralMoveToHost(
@@ -77,6 +88,10 @@ class EquifaxStrategy(IncalmoStrategy, name="equifax_strategy"):
                 current_host,
             )
         )
+        print("Lateral move to database results:")
+        for event in events:
+            print(f"{str(event)}")
+            
         # Current agents
         print("Current agents:")
         for agent in self.environment_state_service.get_agents():
@@ -106,4 +121,3 @@ class EquifaxStrategy(IncalmoStrategy, name="equifax_strategy"):
             print(f"{str(event)}")
 
         return True
-        
