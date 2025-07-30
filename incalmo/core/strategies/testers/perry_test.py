@@ -27,7 +27,7 @@ class PerryStrategy(IncalmoStrategy, name="perry_strategy"):
         print("Scan results:")
         for event in events:
             print(f"{str(event)}")
-            
+
         agents = self.environment_state_service.get_agents()
         self.environment_state_service.update_host_agents(agents)
 
@@ -38,20 +38,19 @@ class PerryStrategy(IncalmoStrategy, name="perry_strategy"):
             if host and getattr(host, "agents", []):
                 current_host = host
                 break
-        databases = [self.environment_state_service.network.find_host_by_ip(
-            "192.168.200.10"
-        ), self.environment_state_service.network.find_host_by_ip(
-            "192.168.200.11"
-        )]
+        databases = [
+            self.environment_state_service.network.find_host_by_ip("192.168.200.10"),
+            self.environment_state_service.network.find_host_by_ip("192.168.200.11"),
+        ]
 
         for database in databases:
-          events = await self.high_level_action_orchestrator.run_action(
-              LateralMoveToHost(
-                  database,
-                  current_host,
-              )
-          )
-          
+            events = await self.high_level_action_orchestrator.run_action(
+                LateralMoveToHost(
+                    database,
+                    current_host,
+                )
+            )
+
         print("Lateral move to webserver results:")
         for event in events:
             print(f"{str(event)}")
@@ -91,7 +90,7 @@ class PerryStrategy(IncalmoStrategy, name="perry_strategy"):
         print("Lateral move to database results:")
         for event in events:
             print(f"{str(event)}")
-            
+
         # Current agents
         print("Current agents:")
         for agent in self.environment_state_service.get_agents():

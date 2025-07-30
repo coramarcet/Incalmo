@@ -106,4 +106,3 @@ class EquifaxStrategy(IncalmoStrategy, name="equifax_strategy"):
             print(f"{str(event)}")
 
         return True
-        
