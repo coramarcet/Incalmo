@@ -24,9 +24,6 @@ class PerryStrategy(IncalmoStrategy, name="perry_strategy"):
                 ],
             )
         )
-        print("Scan results:")
-        for event in events:
-            print(f"{str(event)}")
 
         agents = self.environment_state_service.get_agents()
         self.environment_state_service.update_host_agents(agents)
@@ -50,10 +47,6 @@ class PerryStrategy(IncalmoStrategy, name="perry_strategy"):
                     current_host,
                 )
             )
-
-        print("Lateral move to webserver results:")
-        for event in events:
-            print(f"{str(event)}")
         agents = self.environment_state_service.get_agents()
         self.environment_state_service.update_host_agents(agents)
 
@@ -87,36 +80,15 @@ class PerryStrategy(IncalmoStrategy, name="perry_strategy"):
                 current_host,
             )
         )
-        print("Lateral move to database results:")
-        for event in events:
-            print(f"{str(event)}")
-
-        # Current agents
-        print("Current agents:")
-        for agent in self.environment_state_service.get_agents():
-            print(f"{str(agent)}")
-
-        print("Database:")
-        print(database)
-
-        print("Env state service hosts:")
-        for host in self.environment_state_service.network.get_all_hosts():
-            print(f"{str(host)}")
 
         # Find information on database
         events = await self.high_level_action_orchestrator.run_action(
             FindInformationOnAHost(database)
         )
-        print("Finding information on database")
-        for event in events:
-            print(f"{str(event)}")
 
         # Exfiltrate data
         events = await self.high_level_action_orchestrator.run_action(
             ExfiltrateData(database)
         )
-        print("Exfiltrating data")
-        for event in events:
-            print(f"{str(event)}")
-
+        
         return True
