@@ -134,7 +134,15 @@ All events inherit from the base `Event` class (Event.py)
 
 - `LateralMoveToHost` (LateralMoveToHost.py): Attempts lateral movement to a specific host using available techniques (credentials or exploits)
 
-`LateralMoveToHost(host_to_attack: Host, attacking_host: Host, stop_after_success: bool = True):`
+`LateralMoveToHost(host_to_attack: Host,
+  attacking_host: Host,
+  only_use_credentials: Optional[bool] = None,
+  attack_ports: Optional[list[int]] = None,
+  stop_after_success: bool = True,):`
+
+only_use_credentials: If true, only use credentials to laterally move to host.
+attack_ports: Optional, if not set, attacks all services on host_to_attack.
+stop_after_success: Will stop attacking host_to_attack if lateral movement is successful.
 
 - `LLMAgentScan` (LLMAgentScan.py): Performs network and host scans to discover information about the target environment
 

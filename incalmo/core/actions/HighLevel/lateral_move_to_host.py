@@ -1,3 +1,4 @@
+from typing import Optional
 from incalmo.core.models.events import Event, InfectedNewHost
 from incalmo.core.models.network import Host
 from incalmo.core.services import (
@@ -16,12 +17,16 @@ class LateralMoveToHost(HighLevelAction):
         self,
         host_to_attack: Host,
         attacking_host: Host,
+        only_use_credentials: Optional[bool] = None,
+        attack_ports: Optional[list[int]] = None,
         stop_after_success: bool = True,
     ):
         super().__init__()
         self.host_to_attack = host_to_attack
         self.attacking_host = attacking_host
         self.stop_after_success = stop_after_success
+        self.only_use_credentials = only_use_credentials
+        self.attack_ports = attack_ports
 
     async def run(
         self,
@@ -35,6 +40,32 @@ class LateralMoveToHost(HighLevelAction):
         @brief: randomly chooses a host to attack and randomly chooses a port to attack on that host.
                 Then, it sets up the lateral move link and runs it.
         """
+        events = []
+
+        events += await self._credential_laeral_move(
+            low_level_action_orchestrator, context
+        )
+        if self.only_use_credentials:
+            return events
+
+        if self.attack_ports:
+            events += await self._service_lateral_move(
+                low_level_action_orchestrator, context, self.attack_ports
+            )
+        else:
+            # If no ports are specified, attack all open ports
+            attack_ports = list(self.host_to_attack.open_ports.keys())
+            events += await self._service_lateral_move(
+                low_level_action_orchestrator, context, attack_ports
+            )
+
+        return events
+
+    async def _credential_laeral_move(
+        self,
+        low_level_action_orchestrator: LowLevelActionOrchestrator,
+        context: HighLevelContext,
+    ) -> list[Event]:
         events = []
 
         # Check if attacking host has credentials
@@ -55,16 +86,24 @@ class LateralMoveToHost(HighLevelAction):
                         else:
                             events += new_events
 
+        return events
+
+    async def _service_lateral_move(
+        self,
+        low_level_action_orchestrator: LowLevelActionOrchestrator,
+        context: HighLevelContext,
+        ports_to_attack: list[int],
+    ) -> list[Event]:
+        events = []
+
         # Try to exploit a service
         agent = self.attacking_host.get_agent()
         if not agent:
             return events
 
-        for (
-            port_to_attack,
-            service_to_attack,
-        ) in self.host_to_attack.open_ports.items():
+        for port_to_attack in ports_to_attack:
             action_to_run = None
+            service_to_attack = self.host_to_attack.open_ports[port_to_attack]
 
             if (
                 "CVE-2017-5638" in service_to_attack.CVE

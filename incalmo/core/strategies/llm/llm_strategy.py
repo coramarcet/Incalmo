@@ -26,6 +26,8 @@ from incalmo.core.actions.high_level_action import HighLevelAction
 from incalmo.core.actions.low_level_action import LowLevelAction
 from incalmo.core.models.events import BashOutputEvent
 from config.attacker_config import AttackerConfig
+from incalmo.core.services.action_context import HighLevelContext
+from uuid import uuid4
 
 from abc import ABC, abstractmethod
 
@@ -71,8 +73,10 @@ class LLMStrategy(IncalmoStrategy, ABC):
             for host in self.initial_hosts:
                 agent = host.get_agent()
                 if agent:
+                    hl_id = str(uuid4())
+                    context = HighLevelContext(hl_id=hl_id)
                     await self.low_level_action_orchestrator.run_action(
-                        MD5SumAttackerData(agent)
+                        MD5SumAttackerData(agent), context
                     )
 
         # Output preprompt log
@@ -185,8 +189,10 @@ class LLMStrategy(IncalmoStrategy, ABC):
                             action
                         )
                     elif isinstance(action, LowLevelAction):
+                        hl_id = str(uuid4())
+                        context = HighLevelContext(hl_id=hl_id)
                         events = await self.low_level_action_orchestrator.run_action(
-                            action
+                            action, context
                         )
 
                     for event in events:
@@ -210,8 +216,10 @@ class LLMStrategy(IncalmoStrategy, ABC):
                     raise Exception("Attacker agent doesn't exist.")
                 attacker_agent = attacker_host.agents[0]
                 lowlevelbashcommand = RunBashCommand(attacker_agent, command)
+                hl_id = str(uuid4())
+                context = HighLevelContext(hl_id=hl_id)
                 results = await self.low_level_action_orchestrator.run_action(
-                    lowlevelbashcommand
+                    lowlevelbashcommand, context
                 )
                 self.bash_log += f"Command response: \n"
                 for result in results:
