@@ -27,6 +27,7 @@ services:
     environment:
       - SERVER_IP=localhost
       - MODE=docker
+      - DEBUG=true
     volumes:
       - ../:/incalmo
       - frontend-ignore:/incalmo/incalmo/frontend

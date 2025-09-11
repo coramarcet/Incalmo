@@ -12,9 +12,6 @@ def make_celery(app: Flask):
         "result_backend", "redis://localhost:6379/0"
     )
 
-    print(f"[CELERY_APP] Using broker: {broker}")
-    print(f"[CELERY_APP] Using backend: {backend}")
-
     # Configure Celery with explicit Redis transport
     celery = Celery(
         app.import_name,

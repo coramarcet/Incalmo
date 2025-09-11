@@ -1,16 +1,15 @@
 import asyncio
-from incalmo.core.strategies import llm
 from incalmo.core.strategies.incalmo_strategy import IncalmoStrategy
-from incalmo.core.services import ConfigService
-from incalmo.core.strategies.testers.equifax_test import EquifaxStrategy
-from incalmo.core.strategies.testers.MHBench_equifax_test import MHBenchEquifaxStrategy
-from incalmo.core.strategies.llm.langchain_strategy import LangChainStrategy
 from config.attacker_config import AttackerConfig
+from incalmo.models.attack_report import AttackReport
+
+# TODO Does not work without this import. Needed for imports? Debug this
+from incalmo.core.strategies.llm.langchain_strategy import LangChainStrategy
 
 TIMEOUT_SECONDS = 75 * 60
 
 
-async def run_incalmo_strategy(config: AttackerConfig, task_id: str):
+async def run_incalmo_strategy(config: AttackerConfig, task_id: str) -> AttackReport:
     """Run incalmo with the specified strategy"""
 
     if not config.strategy.planning_llm:
@@ -31,3 +30,5 @@ async def run_incalmo_strategy(config: AttackerConfig, task_id: str):
         if asyncio.get_event_loop().time() - start_time > TIMEOUT_SECONDS:
             break
         await asyncio.sleep(0.5)
+
+    return strategy.environment_state_service.get_attack_report(task_id)

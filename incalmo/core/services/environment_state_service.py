@@ -10,6 +10,7 @@ from incalmo.core.models.events import (
     RootAccessOnHost,
     VulnerableServiceFound,
     ScanReportEvent,
+    ExfiltratedData,
 )
 from incalmo.core.models.network import Host
 
@@ -20,6 +21,7 @@ from config.attacker_config import AttackerConfig
 from incalmo.core.models.network import ScanResults
 from incalmo.core.models.network.open_port import OpenPort
 from incalmo.api.server_api import C2ApiClient
+from incalmo.models.attack_report import AttackReport
 
 
 class EnvironmentStateService:
@@ -36,6 +38,8 @@ class EnvironmentStateService:
         environment_initializer = EnvironmentInitializer(config)
         self.network = environment_initializer.get_initial_environment_state()
         self.initial_hosts = []
+
+        self.exfiltrated_data: list[ExfiltratedData] = []
 
     def __str__(self):
         env_status = f"EnvironmentStateService: \n"
@@ -94,7 +98,19 @@ class EnvironmentStateService:
 
             if type(event) is ScanReportEvent:
                 self.update_network_from_report(event.scan_results)
+
+            if type(event) is ExfiltratedData:
+                self.handle_exfiltrated_data(event)
         return
+
+    def handle_exfiltrated_data(self, event: ExfiltratedData):
+        # Check if the file is already in the list
+        for exfiltrated_data in self.exfiltrated_data:
+            if exfiltrated_data.file == event.file:
+                return
+
+        # Add the file to the list
+        self.exfiltrated_data.append(event)
 
     # TODO Change HostsDiscovered to ips discovered
     def handle_HostsDiscovered(self, event: HostsDiscovered):
@@ -258,3 +274,14 @@ class EnvironmentStateService:
 
     def set_initial_hosts(self, initial_hosts: list[Host]):
         self.initial_hosts = initial_hosts
+
+    def get_attack_report(self, strategy_id: str) -> AttackReport:
+        infected_hosts = {}
+        for host in self.network.get_all_hosts():
+            infected_hosts[host.hostname] = [agent.username for agent in host.agents]
+
+        return AttackReport(
+            strategy_id=strategy_id,
+            infected_hosts=infected_hosts,
+            # exfiltrated_data=self.exfiltrated_data,
+        )

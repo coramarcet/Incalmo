@@ -3,7 +3,6 @@ from incalmo.core.services import (
     AttackGraphService,
     LowLevelActionOrchestrator,
     HighLevelActionOrchestrator,
-    ConfigService,
     IncalmoLogger,
 )
 from config.attacker_config import AttackerConfig
