@@ -11,9 +11,6 @@ import os
 broker = os.environ.get("broker_url", "redis://localhost:6379/0")
 backend = os.environ.get("result_backend", "redis://localhost:6379/0")
 
-print(f"[CELERY_WORKER] Using broker: {broker}")
-print(f"[CELERY_WORKER] Using backend: {backend}")
-
 # Create standalone Celery app for worker
 celery_worker = Celery(
     "incalmo_worker",

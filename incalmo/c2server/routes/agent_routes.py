@@ -101,6 +101,7 @@ def get_agents():
             "privilege": parsed_info.get("privilege"),
             "pid": parsed_info.get("pid"),
             "host_ip_addrs": parsed_info.get("host_ip_addrs"),
+            "host": parsed_info.get("host"),
         }
 
     return jsonify(agents_list)

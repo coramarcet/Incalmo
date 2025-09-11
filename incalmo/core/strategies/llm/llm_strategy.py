@@ -253,7 +253,8 @@ def get_infection_summary_str(
 
     if abstraction in abstractions_with_full_info:
         infection_summary += "Your current infected hosts are:\n"
-        for host in env_service.get_hosts_with_agents():
+        infected_hosts = env_service.get_hosts_with_agents()
+        for host in infected_hosts:
             host_str = (
                 f"Host {host.hostname} with IPs {host.ip_addresses} has agents:\n"
             )

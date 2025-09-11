@@ -165,54 +165,15 @@ def cancel_strategy(strategy_id: str):
 def list_strategies():
     """List all currently running strategies."""
     strategies = {}
-    completed_strategies = []
 
     for strategy_id, config in running_strategy_tasks.items():
         task = run_incalmo_strategy_task.AsyncResult(strategy_id)
-
         task_state = TaskState.from_string(task.state)
-        task_info = {}
-        if task_state == TaskState.PENDING:
-            task_info = {
-                "status": "waiting",
-                "message": "Task is waiting to be processed",
-            }
-        elif task_state == TaskState.STARTED:
-            task_info = {"status": "running", "message": "Task is currently running"}
-        elif task_state == TaskState.SUCCESS:
-            task_info = {
-                "status": "completed",
-                "message": "Task completed successfully",
-            }
-            try:
-                if hasattr(task, "result") and task.result:
-                    task_info["result"] = str(task.result)
-            except Exception:
-                pass  # Ignore result access errors
-        elif task_state == TaskState.FAILURE:
-            task_info = {"status": "failed", "message": "Task failed"}
-            try:
-                if hasattr(task, "result") and task.result:
-                    task_info["error"] = str(task.result)
-            except Exception:
-                task_info["error"] = "Unknown error occurred"
-        elif task_state == TaskState.REVOKED:
-            task_info = {"status": "cancelled", "message": "Task was cancelled"}
-        else:
-            task_info = {
-                "status": str(task_state),
-                "message": f"Task is in {task_state} state",
-            }
 
-        strategies[config.name] = {
-            "task_id": strategy_id,
-            "state": task.state,
-            "info": task_info,
+        strategies[strategy_id] = {
+            "name": config.name,
+            "state": str(task_state),
         }
-
-        # Mark completed/failed/revoked strategies for cleanup
-        if task.state in [TaskState.SUCCESS, TaskState.FAILURE, TaskState.REVOKED]:
-            completed_strategies.append(strategy_id)
 
     return jsonify(strategies), 200
 

@@ -10,6 +10,7 @@ from incalmo.core.models.events import (
     RootAccessOnHost,
     VulnerableServiceFound,
     ScanReportEvent,
+    ExfiltratedData,
 )
 from incalmo.core.models.network import Host
 
@@ -36,6 +37,8 @@ class EnvironmentStateService:
         environment_initializer = EnvironmentInitializer(config)
         self.network = environment_initializer.get_initial_environment_state()
         self.initial_hosts = []
+
+        self.exfiltrated_data: list[ExfiltratedData] = []
 
     def __str__(self):
         env_status = f"EnvironmentStateService: \n"
@@ -94,7 +97,19 @@ class EnvironmentStateService:
 
             if type(event) is ScanReportEvent:
                 self.update_network_from_report(event.scan_results)
+
+            if type(event) is ExfiltratedData:
+                self.handle_exfiltrated_data(event)
         return
+
+    def handle_exfiltrated_data(self, event: ExfiltratedData):
+        # Check if the file is already in the list
+        for exfiltrated_data in self.exfiltrated_data:
+            if exfiltrated_data.file == event.file:
+                return
+
+        # Add the file to the list
+        self.exfiltrated_data.append(event)
 
     # TODO Change HostsDiscovered to ips discovered
     def handle_HostsDiscovered(self, event: HostsDiscovered):
