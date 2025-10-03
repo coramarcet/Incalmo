@@ -6,6 +6,13 @@ from typing import Any, Optional
 class StateStore:
     TABLE_NAME = "environment"
     DB_PATH = "state_store.db"
+    _db_connection: Optional[sqlite3.Connection] = None
+
+    @classmethod
+    def initialize(cls) -> None:
+        "Delete existing DB file and create a new one."
+        if os.path.exists(cls.DB_PATH):
+            os.remove(cls.DB_PATH)
 
     @classmethod
     def set_hosts(cls, hosts: list[dict]) -> None:

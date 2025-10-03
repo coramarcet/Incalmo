@@ -175,3 +175,6 @@ cython_debug/
 
 .DS_Store
 attacker/c2server/payloads/dynamic_payloads
+
+# SQLite database files
+*.db
