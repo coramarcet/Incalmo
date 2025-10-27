@@ -34,7 +34,7 @@ class HostsWidget(Static):
     def __init__(self) -> None:
         super().__init__()
         self.hosts_data: List[Dict[str, Any]] = []
-        self.api_server_url = "http://localhost:8080"  # Default API server URL
+        self.api_server_url = "http://localhost:8888"  # Default API server URL
 
     def compose(self):
         """Compose the widget layout."""

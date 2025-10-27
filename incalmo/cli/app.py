@@ -14,6 +14,7 @@ from rich.text import Text
 from incalmo.cli.widgets import CommandSuggestionPopup, HostsWidget
 from incalmo.cli.session import SessionManager
 from incalmo.cli.commands_processor import CommandProcessor
+from incalmo.incalmo_runner import run_incalmo_strategy
 
 
 class IncalmoREPL(App):
@@ -35,6 +36,31 @@ class IncalmoREPL(App):
         self.session_manager = SessionManager()
         self.command_processor = CommandProcessor(self.session_manager)
         self.suggestion_popup_visible = False
+
+        self._initialize_llm()
+
+    def _initialize_llm(self) -> None:
+        """Initialize the LLM interface and store it in the session."""
+        try:
+            print("Initializing LLM interface...")
+            from incalmo.core.services.config_service import ConfigService
+            from incalmo.core.strategies.strategy_factory import StrategyFactory
+
+            config = ConfigService().get_config()
+            # await run_incalmo_strategy(config, task_id="main_task")
+
+            strategy = StrategyFactory().build_strategy(config, task_id="cli_session")
+
+            import asyncio
+
+            async def init_strategy():
+                await strategy.initialize()
+
+            asyncio.run(init_strategy())
+
+            self.session_manager.set_strategy(strategy)
+        except Exception as e:
+            print(f"Error initializing LLM interface: {e}")
 
     def compose(self) -> ComposeResult:
         yield Header(icon="")

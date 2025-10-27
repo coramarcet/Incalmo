@@ -11,6 +11,7 @@ class SessionManager:
 
     def __init__(self):
         self.data: Dict[str, Any] = {}
+        self.strategy = None
 
     def set_variable(self, key: str, value: str) -> None:
         """Set a session variable."""
@@ -39,3 +40,11 @@ class SessionManager:
     def get_status_text(self) -> str:
         """Get status bar text."""
         return f"📊 Variables: {len(self.data)} | ⚡ Commands: 10 | 🚀 Incalmo CLI REPL"
+
+    def set_strategy(self, strategy: Any) -> None:
+        """Set the strategy instance."""
+        self.strategy = strategy
+
+    def get_strategy(self) -> Any:
+        """Get the strategy instance."""
+        return self.strategy
