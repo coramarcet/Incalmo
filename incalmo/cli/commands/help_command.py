@@ -30,7 +30,10 @@ class HelpCommand(BaseCommand):
         # In a more sophisticated setup, you might inject the registry or use a service locator
         commands = {
             "help": "Show detailed help information",
-            "discover": "Perform discovery operations",
+            "discover": "Perform discovery operations. Format: /discover <host_ip>",
+            "move": "Perform lateral movement operations. Format: /move <source_host_ip> <target_host_ip>",
+            "privesc": "Perform privilege escalation operations. Format: /privesc <host_ip>",
+            "exfil": "Exfiltrate data from compromised hosts. Format: /exfil <host_ip>",
             "exit": "Exit the REPL",
         }
 
@@ -38,14 +41,15 @@ class HelpCommand(BaseCommand):
         help_parts = [
             ("Incalmo Help", "bold white"),
             ("\n\n", ""),
-            ("TODO: Add help text here", "green"),
+            ("Send instructions (without /) to send to the LLM for analysis\n\n", "green"),
+            ("Send specific requests with the following commands\n\n", "green"),
         ]
 
         # Add commands dynamically
-        # for cmd, desc in commands.items():
-        #     help_parts.extend(
-        #         [("🔹 ", "cyan"), (f"/{cmd}", "cyan"), (f" - {desc}\n", "dim white")]
-        #     )
+        for cmd, desc in commands.items():
+            help_parts.extend(
+                [("🔹 ", "cyan"), (f"/{cmd}", "cyan"), (f" - {desc}\n", "dim white")]
+            )
 
         # Add footer
         # help_parts.extend(

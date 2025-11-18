@@ -19,6 +19,9 @@ class CommandSuggestionPopup(OptionList):
         commands = [
             ("help", "Show detailed help"),
             ("discover", "Perform discovery operations"),
+            ("move", "Lateral movement operations"),
+            ("privesc", "Privilege escalation operations"),
+            ("exfil", "Data exfiltration operations"),
             ("exit", "Exit..."),
         ]
 

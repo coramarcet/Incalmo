@@ -9,6 +9,8 @@ import pkgutil
 from typing import TYPE_CHECKING, Type, List
 
 from incalmo.cli.commands.base import BaseCommand
+from incalmo.cli.commands.llm_command_base import BaseLLMCommand
+from incalmo.cli.commands.llm_agent_command_base import LLMAgentCommand
 
 if TYPE_CHECKING:
     from incalmo.cli.session import SessionManager
@@ -37,10 +39,12 @@ def discover_commands() -> List[Type[BaseCommand]]:
                 # Find all classes in the module that inherit from BaseCommand
                 for name, obj in inspect.getmembers(module, inspect.isclass):
                     if (
-                        obj != BaseCommand
-                        and issubclass(obj, BaseCommand)
-                        and obj.__module__ == modname
-                    ):
+                    obj != BaseCommand
+                    and obj != BaseLLMCommand
+                    and obj != LLMAgentCommand
+                    and (issubclass(obj, BaseCommand) or issubclass(obj, BaseLLMCommand) or issubclass(obj, LLMAgentCommand))
+                    and obj.__module__ == modname
+                ):
                         command_classes.append(obj)
 
             except ImportError as e:
@@ -77,4 +81,4 @@ def load_commands(session_manager: "SessionManager") -> List[BaseCommand]:
 
 
 # Export the base class and discovery functions
-__all__ = ["BaseCommand", "discover_commands", "load_commands"]
+__all__ = ["BaseCommand", "LLMAgentCommand", "discover_commands", "load_commands"]

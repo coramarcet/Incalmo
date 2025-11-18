@@ -110,6 +110,17 @@ class CommandProcessor:
                 (")", "dim white"),
             )
             output.write(hint_text)
+            
+        try:
+            from incalmo.cli.commands.llm_command import LLMCommand
+            llm_command = LLMCommand(self.session)
+            llm_command.execute(text, output)
+        except Exception as e:
+            error_text = Text.assemble(
+                ("❌ ", "red"),
+                (f"Error processing LLM command: {str(e)}", "red"),
+            )
+            output.write(error_text)
 
     def handle_unknown_command(self, cmd: str, output: RichLog) -> None:
         """Handle unknown commands."""
