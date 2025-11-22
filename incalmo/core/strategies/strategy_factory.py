@@ -32,7 +32,9 @@ class StrategyFactory:
         self, config: AttackerConfig, task_id: str = ""
     ) -> IncalmoStrategy:
         """Build and return a strategy instance based on the config"""
+        print("Building strategy...")
         if isinstance(config.strategy, LLMStrategyConfig):
+            print("Using LangChainStrategy")
             return LangChainStrategy(config=config, task_id=task_id)
         elif isinstance(config.strategy, StateMachineStrategy):
             strategy_name = config.strategy.name

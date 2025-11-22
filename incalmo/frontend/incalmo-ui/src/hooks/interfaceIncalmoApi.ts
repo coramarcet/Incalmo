@@ -66,7 +66,7 @@ export const useIncalmoApi = () => {
   const [llmLogs, setLLMLogs] = useState<string[]>([]);
   const [llmStreamConnected, setLLMStreamConnected] = useState<boolean>(false);
   const [llmStreamError, setLLMStreamError] = useState<string | null>(null);
-  
+
 
   const actionEventSourceRef = useRef<EventSource | null>(null);
   const llmEventSourceRef = useRef<EventSource | null>(null);
@@ -76,7 +76,7 @@ export const useIncalmoApi = () => {
     fetchRunningStrategies();
     fetchStrategies();
     fetchHosts();
-    
+
     // Set up polling interval
     const interval = setInterval(() => {
       fetchAgents();
@@ -114,7 +114,7 @@ export const useIncalmoApi = () => {
     try {
       await api.delete(`/agent/delete/${paw}`);
       await fetchAgents();
-      } catch (error) {
+    } catch (error) {
       console.error('Failed to delete agent:', error);
       throw error;
     }
@@ -166,6 +166,7 @@ export const useIncalmoApi = () => {
         name: "react-ui-session",
         strategy: {
           planning_llm: selectedStrategy,
+          execution_llm: selectedStrategy,
           abstraction: "incalmo"
         },
         execution_llm: "claude-3.5-haiku",
@@ -224,11 +225,11 @@ export const useIncalmoApi = () => {
   const fetchHosts = async () => {
     setHostsLoading(true);
     setHostsError('');
-    
+
     try {
       const response = await api.get('/hosts');
       const data = response.data;
-      
+
       setHosts(data.hosts || []);
       setLastHostsUpdate(new Date().toLocaleTimeString());
     } catch (err) {
@@ -254,7 +255,7 @@ export const useIncalmoApi = () => {
       };
 
       const response = await api.post('/get_initial_environment', defaultConfig);
-      
+
       if (response.status === 200) {
         setEnvironmentInitialized(true);
       }
@@ -276,24 +277,24 @@ export const useIncalmoApi = () => {
         try {
           const data = JSON.parse(event.data);
           console.log("Parsed log data:", data);
-          
+
           if (data.status) {
             console.log('Log stream status:', data.status);
             return;
           }
-          
+
           if (data.error) {
             setActionStreamError(data.error);
             return;
           }
-          
+
           if (data.type === 'LowLevelAction') {
             setLowLevelLogs(prevLogs => {
               const newLogs = [...prevLogs, data];
               return newLogs;
             });
           }
-          
+
           if (data.type === 'HighLevelAction') {
             setHighLevelLogs(prevLogs => {
               const newLogs = [...prevLogs, data];
@@ -305,16 +306,16 @@ export const useIncalmoApi = () => {
           console.error('Error parsing action log data:', e);
         }
       };
-      
+
       eventSource.onopen = () => {
         setActionStreamConnected(true);
         setActionStreamError(null);
       };
-      
+
       eventSource.onerror = () => {
         setActionStreamConnected(false);
         setActionStreamError('Connection to action log stream failed. Will try to reconnect...');
-        
+
         setTimeout(() => {
           if (actionEventSourceRef.current === eventSource) {
             connectToActionLogStream();
@@ -339,28 +340,28 @@ export const useIncalmoApi = () => {
       eventSource.onmessage = (event) => {
         try {
           const data = event.data;
-          
+
           setLLMLogs(prevLogs => {
-          const newLogs = [...prevLogs, data];
-          if (newLogs.length > 200) {
-            return newLogs.slice(-200);
-          }
-          return newLogs;
-        });
+            const newLogs = [...prevLogs, data];
+            if (newLogs.length > 200) {
+              return newLogs.slice(-200);
+            }
+            return newLogs;
+          });
         } catch (e) {
           console.error('Error parsing LLM log data:', e);
         }
       };
-      
+
       eventSource.onopen = () => {
         setLLMStreamConnected(true);
         setLLMStreamError(null);
       };
-      
+
       eventSource.onerror = () => {
         setLLMStreamConnected(false);
         setLLMStreamError('Connection to LLM log stream failed. Will try to reconnect...');
-        
+
         setTimeout(() => {
           if (llmEventSourceRef.current === eventSource) {
             connectToLLMLogStream();
@@ -382,18 +383,18 @@ export const useIncalmoApi = () => {
     agents,
     runningStrategies,
     strategies,
-    hosts,              
-    hostsLoading,       
-    hostsError,         
-    lastHostsUpdate, 
-    lowLevelLogs,                
-    highLevelLogs,                
-    actionStreamConnected,     
-    actionStreamError, 
+    hosts,
+    hostsLoading,
+    hostsError,
+    lastHostsUpdate,
+    lowLevelLogs,
+    highLevelLogs,
+    actionStreamConnected,
+    actionStreamError,
     llmLogs,
     llmStreamConnected,
     llmStreamError,
-    
+
     // Actions
     setSelectedStrategy,
     startStrategy,

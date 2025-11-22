@@ -17,7 +17,7 @@ class StateStore:
 
     @classmethod
     def set_hosts(cls, hosts: list[dict]) -> None:
-        cls._db_connection = sqlite3.connect(cls.DB_PATH)
+        cls._db_connection = sqlite3.connect(cls.DB_PATH, check_same_thread=False)
         cursor = cls._db_connection.cursor()
         cursor.execute(
             f"""
@@ -40,7 +40,7 @@ class StateStore:
     @classmethod
     def get_hosts(cls) -> list[dict]:
         if cls._db_connection is None:
-            cls._db_connection = sqlite3.connect(cls.DB_PATH)
+            cls._db_connection = sqlite3.connect(cls.DB_PATH, check_same_thread=False)
         cursor = cls._db_connection.cursor()
         cursor.execute(f"SELECT host from {cls.TABLE_NAME}")
         rows = cursor.fetchall()

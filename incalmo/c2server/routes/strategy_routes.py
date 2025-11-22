@@ -181,8 +181,10 @@ def list_strategies():
 @strategy_bp.route("/available_strategies", methods=["GET"])
 def get_available_strategies():
     """Get all available strategies from the registry."""
+    from incalmo.core.strategies.strategy_registry import STRATEGY_REGISTRY
+
     strategies = []
-    for strategy_name, strategy_class in IncalmoStrategy._registry.items():
+    for strategy_name, strategy_class in STRATEGY_REGISTRY.get_all_strategies().items():
         if strategy_name not in ["langchain", "llmstrategy"]:
             strategies.append(
                 {
