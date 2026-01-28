@@ -8,7 +8,7 @@ async def main():
     print("Starting Incalmo C2 server using configservice")
     StateStore.initialize()  # Initialize the state store (reset the database)
     config = ConfigService().get_config()
-    await run_incalmo_strategy(config, task_id="main_task")
+    await run_incalmo_strategy(config, task_id=config.strategy.name)
 
 
 if __name__ == "__main__":
