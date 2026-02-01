@@ -531,6 +531,7 @@ dependencies = [
     { name = "pytest" },
     { name = "redis" },
     { name = "requests" },
+    { name = "sqlalchemy" },
     { name = "structlog" },
 ]
 
@@ -558,6 +559,7 @@ requires-dist = [
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "redis", specifier = ">=6.2.0" },
     { name = "requests", specifier = ">=2.32.3" },
+    { name = "sqlalchemy", specifier = ">=2.0.41" },
     { name = "structlog", specifier = ">=25.3.0" },
 ]
 
