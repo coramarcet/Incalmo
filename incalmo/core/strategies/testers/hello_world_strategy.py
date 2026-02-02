@@ -5,8 +5,42 @@ from incalmo.core.strategies.incalmo_strategy import IncalmoStrategy  # Base cla
 from config.attacker_config import AttackerConfig  # Configuration settings for the attacker, specified in config/config.json
 from incalmo.core.actions.HighLevel import Scan  # High-level scan action
 
-from incalmo.core.services.action_context import HighLevelContext  # Context for tracking actions
-from uuid import uuid4  # For generating unique identifiers
+#! Control systems: Sense model react
+#! OODA loop (Observe, Orient, Decide, Act)
+
+#! Add this abstraction for S(p, w, t, a)
+  #! Environment service is the world model
+  #! Action: Scan, Lateral Move
+  #! Telemetry
+  #! Planning: BFS
+
+#! Prototyping ideas from the literature for attack and defense
+  #! Attack graph based defense
+  #! AI planning for automated attack strategies
+  #! RL, GEPA (p)
+
+#! Action/Envrionment
+  #! MOSIP
+  
+#! Personalized firewall defender 
+  #! Easier way to create custom firewalls (send more than 5 connections)
+  #! World model is based on the history of network + out of band information about the network + 
+  #! + out of band information about the world
+  
+#! How do I test if the attacker is working correctly?
+#! Scenario driven testing for the attacker and defender
+
+#! Mental model of new attacker and new defense
+#! How would prompt 
+
+#! Having some visual way to show what an attacker and defender is doing
+  #! Write down these different project ideas
+  
+#! abstraction for S(p, w, t, a)
+#! Testing system for whether attacker and defender are working correctly
+#! Creating strategies from techniques found in the literature
+#! Visual debugger
+
 
 # Define your custom strategy class
 # This class inherits from IncalmoStrategy (provides base functionality) and ABC (abstract base class)
