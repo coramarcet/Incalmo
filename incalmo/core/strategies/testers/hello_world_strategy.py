@@ -83,11 +83,66 @@ class HelloWorldStrategy(IncalmoStrategy, ABC, name = "hello_world_strategy"):
         self.cur_step = 0
         self.total_steps = 1  # Set how many steps your attack should take
         
-        # You can add more initialization here:
-        # - Target selection criteria
-        # - Attack parameters
-        # - State tracking variables
-        # - Custom configuration parsing
+    #! STEP 1: Gather information about the current environment
+    def collect_telemetry(self) -> None:
+        """
+        Observe the current telemetry inputs.
+        This method can be used to gather information about the environment before deciding on actions.
+        
+        In this example, I use existing services from Incalmo that gather telemetry and parse it into the world model,
+        for the LLM to access, so this is a no-op. (See update_world_model() for how to access these services)
+        """
+        pass
+    
+    #! STEP 2: Update world model based on collected telemetry
+    def update_world_model(self) -> dict:
+        """
+        Update internal world model 
+        Look at c2_client functions(incalmo/api/server_api.py) and environment_state_service.network functions (incalmo/core/models/network/network.py)
+        """
+      
+        agents = self.c2_client.get_agents()
+        hosts = self.environment_state_service.network.get_all_hosts()
+        subnets = self.environment_state_service.network.get_all_subnets()
+        host = hosts[0]
+        
+        return {
+            "agents": agents,
+            "hosts": hosts,  
+            "subnets": subnets,
+            "host": host, 
+        }
+    
+    #! STEP 3: Plan your next action based on the updated world model
+    def planner(self, world_model: dict) -> None:
+        """
+        Update stateful processing based on updated world model / feed updated world model into planner.
+        In this example I have no stateful processing or planning, so this is a no-op.
+        
+        """
+        pass
+    
+    #! STEP 4: Execute your chosen action
+    async def act(self, world_model: dict) -> None:
+      """
+      Execute actions based on the current plan.
+      # You can find available actions in incalmo/core/actions/HighLevel/ or incalmo/core/actions/LowLevel/
+      # High level actions call low level actions internally to perform complex tasks
+      """
+      events = await self.high_level_action_orchestrator.run_action(
+        Scan(
+          world_model["host"],
+          world_model["subnets"],
+        )
+      )
+      #! OPT. Process the results
+      # Actions return events that contain information about what happened
+      for event in events:
+        # Always use logging instead of print() statements
+        # This ensures output goes to the correct log files and can be filtered
+        # Can use .error(), .warning(), .debug() as needed
+        self.logger.info(f"Scan results: \n{event}")
+      
 
     # Returns True when attack is complete, returns false if more steps can be executed
     async def step(self) -> bool:
@@ -106,33 +161,12 @@ class HelloWorldStrategy(IncalmoStrategy, ABC, name = "hello_world_strategy"):
         - Conditional logic: Check environment state to decide next actions
         - Error handling: Handle failed actions gracefully and continue or abort as appropriate
         """
-
-        #! STEP 1: Gather information about the current environment
-        # Look at c2_client functions(incalmo/api/server_api.py) and environment_state_service.network functions (incalmo/core/models/network/network.py)
         
-        agents = self.c2_client.get_agents()
-        hosts = self.environment_state_service.network.get_all_hosts()
-        subnets = self.environment_state_service.network.get_all_subnets()
-        host = hosts[0]
+        self.collect_telemetry()  #! STEP 1: Gather information about the current environment
+        world_model = self.update_world_model()  #! STEP 2: Update world model based on collected telemetry
+        self.planner(world_model)  #! STEP 3: Plan your next action based
+        await self.act(world_model)           #! STEP 4: Execute your chosen action
         
-        #! STEP 3: Execute your chosen action
-        # You can find available actions in incalmo/core/actions/HighLevel/ or incalmo/core/actions/LowLevel/
-        # High level actions call low level actions internally to perform complex tasks
-        events = await self.high_level_action_orchestrator.run_action(
-            Scan(
-                host, 
-                subnets,
-            )
-        )
-        
-        #! STEP 4: Process the results
-        # Actions return events that contain information about what happened
-        for event in events:
-            # Always use logging instead of print() statements
-            # This ensures output goes to the correct log files and can be filtered
-  
-            # Can use .error(), .warning(), .debug() as needed
-            self.logger.info(f"Scan results: \n{event}")
 
         #! STEP 5: Determine if the attack should continue
         # This example uses a simple step counter, but you might check:
