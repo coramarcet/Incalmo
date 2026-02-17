@@ -11,11 +11,10 @@ class LangChainRegistry:
         self._model_factories = {
             # OpenAI models
             "gpt-5": lambda: ChatOpenAI(model="gpt-5"),
-            "gpt-4": lambda: ChatOpenAI(model="gpt-4"),
             "gpt-4o": lambda: ChatOpenAI(model="gpt-4o"),
             "gpt-4o-mini": lambda: ChatOpenAI(model="gpt-4o-mini"),
-            "gpt-3.5-turbo": lambda: ChatOpenAI(model="gpt-3.5-turbo"),
-            "gpt-o1": lambda: ChatOpenAI(model="o1-preview"),
+            "o1": lambda: ChatOpenAI(model="o1"),
+            "o3": lambda: ChatOpenAI(model="o3"),
             # Anthropic models
             "claude-3-opus": lambda: ChatAnthropic(
                 model_name="claude-3-opus-latest",
@@ -23,14 +22,15 @@ class LangChainRegistry:
                 timeout=None,
                 stop=None,
             ),
+            # claude-3-sonnet was retired July 2025; no -latest alias exists
             "claude-3-sonnet": lambda: ChatAnthropic(
-                model_name="claude-3-sonnet-latest",
+                model_name="claude-3-sonnet-20240229",
                 temperature=0.7,
                 timeout=None,
                 stop=None,
             ),
             "claude-3-haiku": lambda: ChatAnthropic(
-                model_name="claude-3-haiku-latest",
+                model_name="claude-3-haiku-20240307",
                 temperature=0.7,
                 timeout=None,
                 stop=None,
@@ -60,13 +60,25 @@ class LangChainRegistry:
                 stop=None,
             ),
             "claude-4.5-sonnet": lambda: ChatAnthropic(
-                model_name="claude-sonnet-4-5",
+                model_name="claude-sonnet-4-5-20250929",
                 temperature=0.7,
                 timeout=None,
                 stop=None,
             ),
-            "claude-opus-4-1": lambda: ChatAnthropic(
-                model_name="claude-opus-4-1",
+            "claude-opus-4.1": lambda: ChatAnthropic(
+                model_name="claude-opus-4-1-20250805",
+                temperature=0.7,
+                timeout=None,
+                stop=None,
+            ),
+            "claude-opus-4.6": lambda: ChatAnthropic(
+                model_name="claude-opus-4-6",
+                temperature=0.7,
+                timeout=None,
+                stop=None,
+            ),
+            "claude-haiku-4.5": lambda: ChatAnthropic(
+                model_name="claude-haiku-4-5-20251001",
                 temperature=0.7,
                 timeout=None,
                 stop=None,
@@ -81,8 +93,11 @@ class LangChainRegistry:
             "gemini-2.5-pro": lambda: ChatGoogleGenerativeAI(
                 model="gemini-2.5-pro", temperature=0.7
             ),
+            "gemini-2.5-flash": lambda: ChatGoogleGenerativeAI(
+                model="gemini-2.5-flash", temperature=0.7
+            ),
             "gemini-2-flash": lambda: ChatGoogleGenerativeAI(
-                model="gemini-2-flash", temperature=0.7
+                model="gemini-2.0-flash", temperature=0.7
             ),
             # Other models
             "deepseek-7b": lambda: ChatDeepSeek(
