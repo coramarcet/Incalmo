@@ -8,6 +8,7 @@ class LLMResponseType(Enum):
     FINISHED = 2
     BASH = 3
     MEDIUM_ACTION = 4
+    MCP_STEP_DONE = 5
 
 
 class LLMResponse:

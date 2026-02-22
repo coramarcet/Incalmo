@@ -123,7 +123,7 @@ class LLMStrategy(IncalmoStrategy, ABC):
 
     async def llm_request(self) -> bool:
         try:
-            llm_action = self.llm_interface.get_llm_action(self.last_response)
+            llm_action = await self.llm_interface.get_llm_action(self.last_response)
         except Exception as e:
             self.logger.error(f"Error getting LLM action: {e}")
             return True
@@ -142,6 +142,11 @@ class LLMStrategy(IncalmoStrategy, ABC):
 
         if llm_action.response_type == LLMResponseType.FINISHED:
             return True
+
+        if llm_action.response_type == LLMResponseType.MCP_STEP_DONE:
+            self.logger.info(f"MCP step completed:\n{llm_action.response}")
+            self.last_response = "Please continue the attack based on the current environment state."
+            return False
 
         try:
             current_response = ""

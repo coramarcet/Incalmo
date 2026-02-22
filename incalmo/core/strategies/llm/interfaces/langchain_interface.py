@@ -23,7 +23,7 @@ class LangChainInterface(LLMInterface):
             {"role": "system", "content": self.pre_prompt},
         ]
 
-    def get_response(self, incalmo_response: str | None = None) -> str:
+    async def get_response(self, incalmo_response: str | None = None) -> str:
         if not incalmo_response and len(self.conversation) <= 1:
             # Non empty stating message required for certain LLMs
             starter_message = (
