@@ -17,6 +17,7 @@ class Environment(Enum):
 
 class AbstractionLevel(str, Enum):
     INCALMO = "incalmo"
+    INCALMO_MCP = "incalmo_mcp"
     SHELL = "shell"
     LOW_LEVEL_ACTIONS = "low_level_actions"
     NO_SERVICES = "no_services"

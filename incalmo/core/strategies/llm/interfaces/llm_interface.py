@@ -112,6 +112,11 @@ class LLMInterface(ABC):
                 pre_prompt += file.read()
             with open(f"{pre_prompt_path}/incalmo/final_prompt.txt", "r") as file:
                 final_prompt = file.read()
+        elif config.strategy.abstraction == AbstractionLevel.INCALMO_MCP:
+            with open(f"{pre_prompt_path}/incalmo_mcp/pre_prompt.txt", "r") as file:
+                pre_prompt += Template(file.read()).substitute(parameters)
+            with open(f"{pre_prompt_path}/incalmo_mcp/final_prompt.txt", "r") as file:
+                final_prompt = file.read()
         elif config.strategy.abstraction == AbstractionLevel.NO_SERVICES:
             with open(f"{pre_prompt_path}/no-services/pre_prompt.txt", "r") as file:
                 pre_prompt += file.read()
@@ -155,12 +160,12 @@ class LLMInterface(ABC):
         # Merge the pre-prompt, code base, and final prompt
         self.pre_prompt = pre_prompt + initial_env_state + final_prompt
 
-    def get_llm_action(self, incalmo_response: str | None = None):
+    async def get_llm_action(self, incalmo_response: str | None = None):
         if incalmo_response and len(incalmo_response) > self.max_message_len:
             incalmo_response = incalmo_response[: self.max_message_len]
             incalmo_response += "\n[Message truncated to fit within the max length]"
 
-        llm_response = self.get_response(incalmo_response)
+        llm_response = await self.get_response(incalmo_response)
 
         if "<finished>" in llm_response:
             return LLMResponse(LLMResponseType.FINISHED, llm_response)
@@ -185,7 +190,7 @@ class LLMInterface(ABC):
         return None
 
     @abstractmethod
-    def get_response(self, incalmo_response: str | None = None) -> str:
+    async def get_response(self, incalmo_response: str | None = None) -> str:
         pass
 
 

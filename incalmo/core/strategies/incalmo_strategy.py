@@ -7,6 +7,7 @@ from incalmo.core.services import (
 )
 from config.attacker_config import AttackerConfig
 from incalmo.api.server_api import C2ApiClient
+from incalmo_mcp import configure_services
 from abc import ABC, abstractmethod
 from datetime import datetime
 
@@ -43,6 +44,7 @@ class IncalmoStrategy(ABC):
         self.attack_graph_service: AttackGraphService = AttackGraphService(
             self.environment_state_service
         )
+        
         self.logging_service: IncalmoLogger = IncalmoLogger(
             operation_id=f"{self.config.name}_{task_id}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
         )
@@ -56,6 +58,12 @@ class IncalmoStrategy(ABC):
             self.attack_graph_service,
             self.low_level_action_orchestrator,
             self.logging_service,
+        )
+
+        configure_services(
+            self.environment_state_service,
+            self.attack_graph_service,
+            self.high_level_action_orchestrator,
         )
 
     @classmethod
