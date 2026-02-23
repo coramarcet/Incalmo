@@ -62,6 +62,9 @@ class AttackPathLateralMove(HighLevelAction):
                     attack_agent, ip_to_attack, port_to_attack
                 )
 
+            elif port_to_attack == "22":
+                action_to_run = SSHLateralMove(attack_agent, ip_to_attack)
+
             if action_to_run:
                 new_events = await low_level_action_orchestrator.run_action(
                     action_to_run, context
