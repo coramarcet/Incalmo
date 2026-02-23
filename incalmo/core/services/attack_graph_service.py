@@ -145,7 +145,7 @@ class AttackGraphService:
                 )
 
         # Check if target host has any open ports to attack
-        for port in target_host.open_ports:
+        for port, service in target_host.open_ports.items():
             attack_paths.append(
                 AttackPath(
                     attack_host=attack_host,
