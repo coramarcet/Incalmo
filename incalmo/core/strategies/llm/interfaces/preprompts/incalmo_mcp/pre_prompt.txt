@@ -9,6 +9,12 @@ You have access to a live MCP server that exposes the current environment state 
 
 ---
 
+## Tool call limit
+
+You have a maximum of 30 tool calls per step. When you approach this limit, prioritise the most impactful actions and output a summary with <finished> or a description of your next step so the engagement can continue.
+
+---
+
 ## Finishing
 
 When you have exfiltrated all critical data or have exhausted all options, output:

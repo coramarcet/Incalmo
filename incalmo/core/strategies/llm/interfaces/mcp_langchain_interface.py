@@ -68,10 +68,11 @@ class MCPLangChainInterface(LangChainInterface):
         # and execution tools (scan, lateral_move_to_host, …) — are registered
         # on the MCP server and picked up here automatically.
         all_tools = await client.get_tools()
-        model = self._registry.get_model(self.model_name).bind_tools(all_tools)
+        bare_model = self._registry.get_model(self.model_name)
+        model = bare_model.bind_tools(all_tools)
         lc_messages = _build_lc_messages(self.conversation)
         final_text = await _run_agent_loop(
-            model, all_tools, lc_messages, self.logger, MAX_TOOL_ROUNDS
+            model, bare_model, all_tools, lc_messages, self.logger, MAX_TOOL_ROUNDS
         )
 
         self.logger.info(f"{self.model_name} response:\n{final_text}")
@@ -99,13 +100,13 @@ def _build_lc_messages(conversation: list[dict]):
     return lc
 
 
-async def _run_agent_loop(model, tools, lc_messages, logger, max_rounds: int) -> str:
+async def _run_agent_loop(model, bare_model, tools, lc_messages, logger, max_rounds: int) -> str:
     """
     Run the model/tool loop until the model produces a final text response.
 
-    Returns the final text string.  If max_rounds is reached before the model
-    stops calling tools, a forced summarisation prompt is injected and one
-    final model call is made.
+    Returns the final text string.  If max_rounds is reached a summarisation
+    prompt is injected and bare_model (no tools bound) is used for the final
+    call, guaranteeing a text-only response that is safe to store in history.
     """
     tool_map = {t.name: t for t in tools}
 
@@ -136,7 +137,8 @@ async def _run_agent_loop(model, tools, lc_messages, logger, max_rounds: int) ->
                 ToolMessage(content=result_text, tool_call_id=tool_call_id)
             )
 
-    # Safety exit: model kept calling tools for max_rounds rounds.
+    # Hard cutoff: inject summary prompt and call without tools — the model
+    # cannot make tool calls, so the response is guaranteed to be text-only.
     logger.warning(
         f"[MCPLangChainInterface] Reached {max_rounds} tool-call rounds; "
         "forcing a final response."
@@ -151,5 +153,5 @@ async def _run_agent_loop(model, tools, lc_messages, logger, max_rounds: int) ->
             )
         )
     )
-    response = await model.ainvoke(lc_messages)
+    response = await bare_model.ainvoke(lc_messages)
     return response.content
