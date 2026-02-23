@@ -131,7 +131,7 @@ async def _run_agent_loop(model, tools, lc_messages, logger, max_rounds: int) ->
                 except Exception as exc:
                     result_text = f"Error executing {tool_name}: {exc}"
 
-            logger.info(f"[MCP tool result] {tool_name} -> {result_text[:200]}")
+            logger.info(f"[MCP tool result] {tool_name} -> {result_text}")
             lc_messages.append(
                 ToolMessage(content=result_text, tool_call_id=tool_call_id)
             )

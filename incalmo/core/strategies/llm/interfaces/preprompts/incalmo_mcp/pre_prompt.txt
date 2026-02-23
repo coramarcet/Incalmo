@@ -9,41 +9,6 @@ You have access to a live MCP server that exposes the current environment state 
 
 ---
 
-## Reading the environment
-
-Call these query tools to get live environment data before deciding on an action.
-They update as your attack progresses, so re-read them after each action.
-
-| Tool | What it returns |
-|---|---|
-| `get_network_state()` | Full network topology: subnets, hosts, IPs, ports, services, CVEs, SSH credentials, critical data files |
-| `get_active_agents()` | All active C2 agents: paw, username, privilege level, host, last beacon time |
-| `get_compromised_hosts()` | Hosts with at least one active agent |
-| `get_uncompromised_hosts()` | Discovered hosts that are not yet compromised — your remaining targets |
-| `get_exfiltrated_data()` | Files already exfiltrated |
-| `get_executed_attack_paths()` | Attack paths already run — avoid redundant re-attacks |
-| `get_attack_paths_from(host_ip)` | Possible attack paths originating from a specific compromised host |
-| `get_attack_paths_to(host_ip)` | Attack paths targeting a specific host |
-| `get_exfiltration_path(host_ip)` | Exfiltration relay chain from a specific host |
-
----
-
-## Executing actions
-
-Call these execution tools directly to perform attack actions.
-After each action, re-read the relevant query tools to observe what changed.
-
-| Tool | What it does |
-|---|---|
-| `scan(host_ip, subnet_cidrs)` | Scan subnets from a compromised host to discover new hosts and services |
-| `find_information(host_ip)` | Search a host for SSH credentials and critical data files |
-| `lateral_move_to_host(target_ip, attacker_ip)` | Attempt to compromise a target host using all known techniques |
-| `attack_path_lateral_move(attacker_ip, target_ip)` | Execute a specific pre-computed attack path from the attack graph |
-| `escalate_privilege(host_ip)` | Attempt privilege escalation on a compromised host |
-| `exfiltrate_data(target_ip)` | Exfiltrate critical data files from a compromised host |
-
----
-
 ## Finishing
 
 When you have exfiltrated all critical data or have exhausted all options, output:
