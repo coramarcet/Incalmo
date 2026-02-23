@@ -1,7 +1,7 @@
 import asyncio
 from incalmo.core.strategies.strategy_factory import StrategyFactory
 from incalmo_mcp import run_server
-from config.attacker_config import AttackerConfig
+from config.attacker_config import AttackerConfig, AbstractionLevel
 
 TIMEOUT_SECONDS = 75 * 60
 
@@ -11,9 +11,15 @@ strategy_factory = StrategyFactory()
 async def run_incalmo_strategy(config: AttackerConfig, task_id: str):
     """Run incalmo with the specified strategy"""
     strategy = strategy_factory.build_strategy(config, task_id)
-    
-    # configure_services() was already called inside build_strategy via IncalmoStrategy.__init__
-    mcp_task = asyncio.create_task(run_server(), name="incalmo-mcp-server")
+
+    # Only start the MCP server for strategies that use it.
+    use_mcp = (
+        hasattr(config.strategy, "abstraction")
+        and config.strategy.abstraction == AbstractionLevel.INCALMO_MCP
+    )
+    if use_mcp:
+        # configure_services() was already called inside build_strategy via IncalmoStrategy.__init__
+        mcp_task = asyncio.create_task(run_server(), name="incalmo-mcp-server")
 
     await strategy.initialize()
 
@@ -28,5 +34,6 @@ async def run_incalmo_strategy(config: AttackerConfig, task_id: str):
                 break
             await asyncio.sleep(0.5)
     finally:
-        mcp_task.cancel()
-        await asyncio.gather(mcp_task, return_exceptions=True)
+        if use_mcp:
+            mcp_task.cancel()
+            await asyncio.gather(mcp_task, return_exceptions=True)
