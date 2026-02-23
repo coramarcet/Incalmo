@@ -126,7 +126,7 @@ class LLMStrategy(IncalmoStrategy, ABC):
             llm_action = await self.llm_interface.get_llm_action(self.last_response)
         except Exception as e:
             self.logger.error(f"Error getting LLM action: {e}")
-            return True
+            raise
 
         new_perr_reponse = ""
         if llm_action is None:

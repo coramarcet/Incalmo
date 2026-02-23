@@ -42,7 +42,7 @@ class LangChainRegistry:
                 stop=None,
             ),
             "claude-3.5-haiku": lambda: ChatAnthropic(
-                model_name="claude-3-5-haiku-latest",
+                model_name="claude-3-5-haiku-20241022",
                 temperature=0.7,
                 timeout=None,
                 stop=None,
@@ -61,6 +61,12 @@ class LangChainRegistry:
             ),
             "claude-4.5-sonnet": lambda: ChatAnthropic(
                 model_name="claude-sonnet-4-5",
+                temperature=0.7,
+                timeout=None,
+                stop=None,
+            ),
+            "claude-4.5-haiku": lambda: ChatAnthropic(
+                model_name="claude-haiku-4-5-20251001",
                 temperature=0.7,
                 timeout=None,
                 stop=None,
