@@ -3,44 +3,33 @@
 Optimal Path Solver for Incalmo — Replay-Based
 
 Reconstructs the oracle network topology by replaying events from a completed
-Incalmo run's action_log.jsonl. The end-of-run state represents full knowledge
-of the environment: all hosts, ports, CVEs, credentials, and data files.
-
-Then computes the shortest possible high-level action sequence to achieve all
-goals (exfiltrate all critical data files).
+Incalmo run's action_log.jsonl, then computes the shortest possible high-level
+action sequence to achieve all goals (exfiltrate all critical data files).
 
 This approach:
   - Requires NO modifications to Incalmo's code
-  - Works for ANY MHBench environment (not hardcoded to EquifaxLarge)
+  - Works for ANY MHBench environment (not hardcoded)
   - Can be dropped into the Incalmo repo with real model imports
 
 Usage:
-    python optimal_path_solver.py action_log.jsonl [--results results.json] [-v]
+    python optimal_path_solver.py action_log.jsonl [-o output.json] [-v]
 
 How it works:
     1. REPLAY: Parse every event in the action log to reconstruct the full
        network state — hosts, subnets, ports, CVEs, credentials, data files,
-       infection chains. This mirrors what EnvironmentStateService.parse_events()
-       does during a live run.
-
-    2. ORACLE GRAPH: With the fully-populated state, compute all possible
-       attack edges (exactly how AttackGraphService.get_possible_attack_paths
-       works: check SSH credentials + exploitable ports for every host pair).
-
-    3. BFS: Find the shortest infection chain from the attacker start to a host
-       holding credentials that reach goal hosts (hosts with critical data).
-
-    4. SWEEP: For each goal host, compute the optimal per-host action sequence:
-       LateralMove (if not already there) -> FindInfo -> Exfiltrate.
-
-    5. COMPARE: Diff the optimal path against the actual trace to identify
-       wasted actions, deviation blocks, and failure categories.
+       infection chains.
+    2. ORACLE GRAPH: Compute all possible attack edges (SSH credentials +
+       exploitable ports for every host pair).
+    3. BFS: Find the shortest infection chain from the attacker start to a
+       host holding credentials that reach goal hosts.
+    4. SWEEP: For each goal host, compute the optimal per-host sequence:
+       LateralMove -> FindInfo -> Exfiltrate.
 """
 
 import json
 import argparse
 import sys
-from collections import deque, OrderedDict
+from collections import deque
 from dataclasses import dataclass
 from typing import Optional
 from pathlib import Path
@@ -56,12 +45,11 @@ from pathlib import Path
 # =============================================================================
 
 class SSHCredential:
-    def __init__(self, hostname, host_ip, username, port, utilized=False):
+    def __init__(self, hostname, host_ip, username, port):
         self.hostname = hostname
         self.host_ip = host_ip
         self.username = username
         self.port = port
-        self.utilized = utilized
 
     def __eq__(self, other):
         if not isinstance(other, SSHCredential):
@@ -83,10 +71,6 @@ class OpenPort:
         self.service = service
         self.CVE = CVE or []
 
-    def __repr__(self):
-        cve_str = f", CVE={self.CVE}" if self.CVE else ""
-        return f"OpenPort({self.port}/{self.service}{cve_str})"
-
 
 class Host:
     def __init__(self, ip_addresses=None, hostname=None):
@@ -95,7 +79,6 @@ class Host:
         self.open_ports: dict[int, OpenPort] = {}
         self.ssh_config: list[SSHCredential] = []
         self.critical_data_files: dict[str, list[str]] = {}
-        self.agents: list[str] = []
         self.infected = False
         self.infection_source: Optional[str] = None
 
@@ -125,12 +108,6 @@ class Network:
 
     def find_host_by_ip(self, ip: str) -> Optional[Host]:
         return self.hosts.get(ip)
-
-    def find_host_by_hostname(self, hostname: str) -> Optional[Host]:
-        for h in self.hosts.values():
-            if h.hostname == hostname:
-                return h
-        return None
 
     def get_all_unique_hosts(self) -> list[Host]:
         seen = set()
@@ -230,7 +207,6 @@ def replay_events(action_log_path: str) -> Network:
                 if target_host:
                     target_host.hostname = new_hostname
                     target_host.infected = True
-                    target_host.agents.append(new_agent.get("paw", ""))
                     target_host.infection_source = source_agent.get("host")
                     for ip in new_ips:
                         if ip not in target_host.ip_addresses:
@@ -238,11 +214,8 @@ def replay_events(action_log_path: str) -> Network:
                         network.hosts[ip] = target_host
 
                     # Infer SSH credential from successful infection.
-                    # Only infer if target has SSH (port 22) — infections via
-                    # Struts (port 8080 CVE) don't imply an SSH credential.
-                    # We check: does the target have port 22 and does the
-                    # source NOT have a CVE-exploitable port to the target?
-                    src_hostname = source_agent.get("host")
+                    # Only infer when target has no CVE-exploitable port
+                    # (CVE means exploit-based, not SSH-based infection).
                     src_host = None
                     for ip in source_agent.get("host_ip_addrs", []):
                         src_host = network.find_host_by_ip(ip)
@@ -250,15 +223,9 @@ def replay_events(action_log_path: str) -> Network:
                             break
 
                     if src_host and new_ips and target_host:
-                        # Check if this was likely an SSH-based infection
-                        # (target has port 22, and source had a credential)
-                        target_has_ssh = 22 in target_host.open_ports
                         target_has_exploitable_port = any(
                             p.CVE for p in target_host.open_ports.values()
                         )
-                        # If target has a CVE port, the infection was likely
-                        # via exploit, not SSH. Only infer SSH cred when
-                        # there's no CVE to explain the infection.
                         if not target_has_exploitable_port:
                             inferred_cred = SSHCredential(
                                 hostname=new_hostname or "",
@@ -266,8 +233,6 @@ def replay_events(action_log_path: str) -> Network:
                                 username=new_hostname or "",
                                 port="22",
                             )
-                            # Dedup by target IP (not username — naming
-                            # can differ between SSH config and hostname)
                             existing_ips = {c.host_ip for c in src_host.ssh_config}
                             if inferred_cred.host_ip not in existing_ips:
                                 src_host.ssh_config.append(inferred_cred)
@@ -279,7 +244,6 @@ def replay_events(action_log_path: str) -> Network:
                         if h:
                             h.hostname = src_hostname
                             h.infected = True
-                            h.agents.append(source_agent.get("paw", ""))
                             attacker_host = h
                             break
 
@@ -317,7 +281,6 @@ def replay_events(action_log_path: str) -> Network:
                             attacker_host = network.get_or_create_host(ip)
                             attacker_host.hostname = hostname
                             attacker_host.infected = True
-                            attacker_host.agents.append("initial")
                     break
 
     return network
@@ -331,7 +294,6 @@ def get_attack_edges(network: Network, src_host: Host) -> list[tuple]:
     """
     Compute attack edges from src_host.
     Mirrors AttackGraphService.get_possible_attack_paths().
-
     Returns (dst_host, technique_description, is_exploitable) tuples.
     """
     edges = []
@@ -500,86 +462,6 @@ def compute_optimal_path(network: Network) -> list[OptimalStep]:
 
 
 # =============================================================================
-# Step 5: COMPARE with actual trace
-# =============================================================================
-
-def parse_actual_trace(action_log_path: str) -> list[dict]:
-    actions = []
-    step = 0
-    with open(action_log_path) as f:
-        for line in f:
-            obj = json.loads(line)
-            if obj["type"] == "HighLevelAction":
-                step += 1
-                params = obj.get("action_params", {})
-                action_name = obj["action_name"]
-                target = source = ""
-
-                if action_name == "Scan":
-                    source = params.get("scan_host", {}).get("hostname", "?")
-                    subs = params.get("subnets_to_scan", [])
-                    target = subs[0].get("ip_mask", "?") if subs else "?"
-                elif action_name == "LateralMoveToHost":
-                    source = params.get("attacking_host", {}).get("hostname", "?")
-                elif action_name == "FindInformationOnAHost":
-                    target = source = params.get("host", {}).get("hostname", "?")
-                elif action_name == "EscelatePrivledge":
-                    target = source = params.get("host", {}).get("hostname", "?")
-                elif action_name == "ExfiltrateData":
-                    h = params.get("host", {})
-                    target = source = h.get("hostname", "?") if h else "?"
-
-                actions.append({
-                    "step": step, "action": action_name,
-                    "source": source, "target": target,
-                    "timestamp": obj["timestamp"],
-                })
-    return actions
-
-
-def compare_traces(optimal: list[OptimalStep], actual: list[dict],
-                   results_path: Optional[str] = None) -> dict:
-    goals_reached = total_goals = "unknown"
-    if results_path:
-        try:
-            with open(results_path) as f:
-                r = json.load(f)
-            goals_reached = len(r.get("data_exfiltrated", []))
-            total_goals = goals_reached
-        except:
-            pass
-
-    actual_breakdown = {}
-    for a in actual:
-        actual_breakdown[a["action"]] = actual_breakdown.get(a["action"], 0) + 1
-
-    optimal_breakdown = {}
-    for s in optimal:
-        optimal_breakdown[s.action] = optimal_breakdown.get(s.action, 0) + 1
-
-    excess_by_type = {}
-    for t in sorted(set(actual_breakdown) | set(optimal_breakdown)):
-        a_n = actual_breakdown.get(t, 0)
-        o_n = optimal_breakdown.get(t, 0)
-        if a_n != o_n:
-            excess_by_type[t] = {"optimal": o_n, "actual": a_n, "excess": a_n - o_n}
-
-    return OrderedDict({
-        "summary": OrderedDict({
-            "optimal_steps": len(optimal),
-            "actual_steps": len(actual),
-            "path_efficiency": round(len(optimal) / len(actual), 4) if actual else 0,
-            "excess_actions": len(actual) - len(optimal),
-            "waste_ratio": round(1 - len(optimal) / len(actual), 4) if actual else 0,
-            "goals_reached": goals_reached,
-        }),
-        "optimal_breakdown": OrderedDict(sorted(optimal_breakdown.items())),
-        "actual_breakdown": OrderedDict(sorted(actual_breakdown.items())),
-        "excess_by_type": excess_by_type,
-    })
-
-
-# =============================================================================
 # Main
 # =============================================================================
 
@@ -588,7 +470,6 @@ def main():
         description="Compute optimal attack path by replaying Incalmo action log"
     )
     parser.add_argument("action_log", help="Path to action_log.jsonl")
-    parser.add_argument("--results", default=None, help="Path to results.json")
     parser.add_argument("--output", "-o", default=None, help="Output JSON path")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
@@ -623,24 +504,8 @@ def main():
         if len(optimal) > 15:
             print(f"    ... ({len(optimal) - 15} more)", file=sys.stderr)
 
-    # Step 5: Compare
-    actual = parse_actual_trace(args.action_log)
-    comparison = compare_traces(optimal, actual, args.results)
-
-    if args.verbose:
-        s = comparison["summary"]
-        print(f"\n  Actual:     {s['actual_steps']} steps", file=sys.stderr)
-        print(f"  Efficiency: {s['path_efficiency']}", file=sys.stderr)
-        print(f"  Excess:     {s['excess_actions']} actions", file=sys.stderr)
-        if comparison["excess_by_type"]:
-            print(f"  By type:", file=sys.stderr)
-            for t, info in comparison["excess_by_type"].items():
-                print(f"    {t}: +{info['excess']} "
-                      f"({info['actual']} vs {info['optimal']} optimal)",
-                      file=sys.stderr)
-
     # Output
-    report = OrderedDict({
+    report = {
         "environment": {
             "total_hosts": len(all_hosts),
             "subnets": {m: len(h) for m, h in network.subnets.items()},
@@ -652,8 +517,7 @@ def main():
                         "target": s.target, "technique": s.technique,
                         "purpose": s.purpose} for s in optimal],
         },
-        "comparison": comparison,
-    })
+    }
 
     out = json.dumps(report, indent=2, default=str)
     if args.output:
