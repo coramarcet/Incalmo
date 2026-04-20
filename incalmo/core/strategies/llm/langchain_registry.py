@@ -42,7 +42,7 @@ class LangChainRegistry:
                 stop=None,
             ),
             "claude-3.5-haiku": lambda: ChatAnthropic(
-                model_name="claude-3-5-haiku-latest",
+                model_name="claude-haiku-4-5-20251001",
                 temperature=0.7,
                 timeout=None,
                 stop=None,

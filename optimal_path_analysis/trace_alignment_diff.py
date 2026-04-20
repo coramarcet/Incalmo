@@ -96,23 +96,26 @@ def parse_actual_trace(action_log_path: str) -> list[NormalizedAction]:
             target = subs[0].get("ip_mask", "?") if subs else "?"
 
         elif action == "LateralMoveToHost":
-            source = params.get("attacking_host", {}).get("hostname", "?")
+            src_host = params.get("attacking_host", {})
+            source = src_host.get("hostname") or (src_host.get("ip_addresses", [None])[0]) or "?"
             if "InfectedNewHost" in child_events:
                 target = child_events["InfectedNewHost"]["new_agent"]["host"]
             else:
-                t = params.get("target_host", {})
-                target = t.get("hostname", t.get("ip_address", "unknown"))
+                t = params.get("host_to_attack") or params.get("target_host") or {}
+                target = t.get("hostname") or (t.get("ip_addresses", [None])[0]) or t.get("ip_address") or "unknown"
                 success = False
 
         elif action == "FindInformationOnAHost":
-            source = target = params.get("host", {}).get("hostname", "?")
+            h = params.get("host", {})
+            source = target = h.get("hostname") or (h.get("ip_addresses", [None])[0]) or "?"
 
         elif action == "EscelatePrivledge":
-            source = target = params.get("host", {}).get("hostname", "?")
+            h = params.get("host", {})
+            source = target = h.get("hostname") or (h.get("ip_addresses", [None])[0]) or "?"
 
         elif action == "ExfiltrateData":
             h = params.get("host") or params.get("target_host") or {}
-            source = h.get("hostname", h.get("ip_address", "?"))
+            source = h.get("hostname") or (h.get("ip_addresses", [None])[0]) or h.get("ip_address") or "?"
             target = source
             if "ExfiltratedData" in child_events:
                 f_name = child_events["ExfiltratedData"].get("file", "")
