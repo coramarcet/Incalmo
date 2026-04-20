@@ -16,10 +16,14 @@ non_productive = total_steps - productive
 
 # Find the optimal path length (highest optimal_step among MATCH steps)
 match_steps = [s["optimal_step"] for s in trace if s.get("status") == "MATCH" and s.get("optimal_step")]
-optimal_length = max(match_steps) if match_steps else None
+optimal_length = len(match_steps)
 
 # Path efficiency
-path_efficiency = round(optimal_length / total_steps, 4) if optimal_length else None
+match_rate = round(optimal_length / total_steps, 4) if optimal_length else None
+
+# What fraction of steps made ANY forward progress (productive)
+productive_count = label_counts.get("PRODUCTIVE", 0)
+productive_rate = round(productive_count / total_steps, 4)  # ~0.936
 
 # Waste ratio
 waste_ratio = round(non_productive / total_steps, 4)
@@ -52,7 +56,7 @@ report = {
     "summary": {
         "total_steps": total_steps,
         "optimal_path_length": optimal_length,
-        "path_efficiency": path_efficiency,
+        "path_efficiency": productive_rate,
         "waste_ratio": waste_ratio,
     },
     "category_breakdown": dict(label_counts),

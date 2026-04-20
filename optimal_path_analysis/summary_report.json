@@ -1,8 +1,8 @@
 {
   "summary": {
     "total_steps": 156,
-    "optimal_path_length": 78,
-    "path_efficiency": 0.5,
+    "optimal_path_length": 38,
+    "path_efficiency": 0.9359,
     "waste_ratio": 0.0641
   },
   "category_breakdown": {
