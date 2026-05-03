@@ -1,0 +1,14 @@
+{
+  "environment": {
+    "total_hosts": 3,
+    "subnets": {
+      "192.168.200.0/24": 2,
+      "192.168.199.0/24": 1
+    },
+    "goal_hosts": 0
+  },
+  "optimal_path": {
+    "total_steps": 0,
+    "steps": []
+  }
+}

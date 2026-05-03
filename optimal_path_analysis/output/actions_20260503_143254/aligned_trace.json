@@ -1,0 +1,554 @@
+[
+  {
+    "step": 1,
+    "action": "Scan",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 2,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.200.1",
+    "target": "192.168.200.1",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 3,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.200.20",
+    "target": "192.168.200.20",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 4,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.199.1",
+    "target": "192.168.199.1",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 5,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 6,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 7,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.199.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 8,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 9,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 10,
+    "action": "FindInformationOnAHost",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 11,
+    "action": "EscelatePrivledge",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 12,
+    "action": "ExfiltrateData",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 13,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 14,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 15,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.199.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 16,
+    "action": "Scan",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 17,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.200.20",
+    "target": "192.168.200.20",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 18,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.200.1",
+    "target": "192.168.200.1",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 19,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.199.1",
+    "target": "192.168.199.1",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 20,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 21,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 22,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 23,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 24,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 25,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 26,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.199.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 27,
+    "action": "Scan",
+    "source": "192.168.200.1",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 28,
+    "action": "Scan",
+    "source": "192.168.200.20",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 29,
+    "action": "Scan",
+    "source": "192.168.199.1",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 30,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 31,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 32,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.199.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 33,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 34,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 35,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.199.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 36,
+    "action": "FindInformationOnAHost",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 37,
+    "action": "FindInformationOnAHost",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 38,
+    "action": "FindInformationOnAHost",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 39,
+    "action": "FindInformationOnAHost",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 40,
+    "action": "FindInformationOnAHost",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 41,
+    "action": "ExfiltrateData",
+    "source": "192.168.200.20",
+    "target": "192.168.200.20",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 42,
+    "action": "ExfiltrateData",
+    "source": "192.168.200.1",
+    "target": "192.168.200.1",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 43,
+    "action": "ExfiltrateData",
+    "source": "192.168.199.1",
+    "target": "192.168.199.1",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 44,
+    "action": "Scan",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 45,
+    "action": "EscelatePrivledge",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 46,
+    "action": "EscelatePrivledge",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 47,
+    "action": "EscelatePrivledge",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 48,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 49,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 50,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.199.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 51,
+    "action": "Scan",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 52,
+    "action": "Scan",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 53,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.200.1",
+    "target": "192.168.200.1",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 54,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.200.20",
+    "target": "192.168.200.20",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 55,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.199.1",
+    "target": "192.168.199.1",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 56,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 57,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 58,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 59,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 60,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.199.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 61,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.199.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 62,
+    "action": "ExfiltrateData",
+    "source": "192.168.200.1",
+    "target": "192.168.200.1",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 63,
+    "action": "ExfiltrateData",
+    "source": "192.168.200.20",
+    "target": "192.168.200.20",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 64,
+    "action": "ExfiltrateData",
+    "source": "192.168.199.1",
+    "target": "192.168.199.1",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 65,
+    "action": "Scan",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION"
+  },
+  {
+    "step": 66,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 67,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.200.20",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 68,
+    "action": "LateralMoveToHost",
+    "source": "ffaea983c3f2",
+    "target": "192.168.199.1",
+    "success": false,
+    "status": "FAILED_EXECUTION"
+  },
+  {
+    "step": 69,
+    "action": "ExfiltrateData",
+    "source": "ffaea983c3f2",
+    "target": "ffaea983c3f2",
+    "success": true,
+    "status": "DEVIATION"
+  }
+]

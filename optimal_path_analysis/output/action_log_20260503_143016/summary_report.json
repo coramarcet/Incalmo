@@ -1,0 +1,60 @@
+{
+  "summary": {
+    "total_steps": 156,
+    "optimal_path_length": 147,
+    "path_efficiency": 0.9423,
+    "productive_rate": 0.9423,
+    "waste_ratio": 0.0577,
+    "productive_steps": 147,
+    "productive_in_order": 63,
+    "productive_out_of_order": 84,
+    "wasted_steps": 9,
+    "warnings": []
+  },
+  "category_breakdown": {
+    "PRODUCTIVE": 147,
+    "SUBOPTIMAL_EXPLORATION": 3,
+    "FAILED_EXECUTION": 3,
+    "REDUNDANT": 3
+  },
+  "excess_actions_by_type": {
+    "Scan": 3,
+    "LateralMoveToHost": 4,
+    "FindInformationOnAHost": 1,
+    "EscelatePrivledge": 1
+  },
+  "deviation_blocks": [
+    {
+      "start_step": 2,
+      "end_step": 10,
+      "steps": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "labels": [
+        "SUBOPTIMAL_EXPLORATION",
+        "SUBOPTIMAL_EXPLORATION",
+        "SUBOPTIMAL_EXPLORATION",
+        "FAILED_EXECUTION",
+        "FAILED_EXECUTION",
+        "REDUNDANT",
+        "FAILED_EXECUTION",
+        "REDUNDANT",
+        "REDUNDANT"
+      ],
+      "length": 9,
+      "breakdown": {
+        "SUBOPTIMAL_EXPLORATION": 3,
+        "FAILED_EXECUTION": 3,
+        "REDUNDANT": 3
+      }
+    }
+  ]
+}
