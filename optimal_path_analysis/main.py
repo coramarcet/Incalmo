@@ -57,7 +57,9 @@ def _make_run_dir(action_log_path: Path, base_output_dir: Path) -> Path:
 
 
 def run_pipeline(action_log: Path, output_root: Path, verbose: bool = False) -> Path:
-    """Run all five stages on a single action log. Returns the run dir."""
+    """Run all six stages on a single action log. Returns the run dir.
+    Stage 6 (animation) is skipped if ffmpeg is not on PATH.
+    """
     if not action_log.exists():
         raise FileNotFoundError(f"Action log not found: {action_log}")
 
@@ -113,10 +115,11 @@ def run_pipeline(action_log: Path, output_root: Path, verbose: bool = False) -> 
 
     # ----- Stage 6: trajectory animation (optional, requires ffmpeg) -----
     _say("[6/6] Rendering trajectory animation...", verbose)
-    if ga._has_ffmpeg():
+    if ga.has_ffmpeg():
         anim_path = run_dir / TRAJECTORY_MP4
         try:
-            ga.build_animation(str(classified_path), str(anim_path))
+            ga.build_animation(str(classified_path), str(anim_path),
+                               analysis_path=str(analysis_path))
         except Exception as e:
             # Animation is non-critical; don't let it break the pipeline.
             _say(f"      WARNING: animation failed: {e}", verbose)

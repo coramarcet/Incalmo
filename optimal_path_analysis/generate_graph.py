@@ -108,6 +108,7 @@ def plot_trajectory(classified_path, analysis_path, output_path):
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)
+    plt.close(fig)
     print(f"Saved {output_path}")
 
 

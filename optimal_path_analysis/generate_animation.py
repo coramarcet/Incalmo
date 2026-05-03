@@ -40,7 +40,9 @@ BG_COLOR = "#1a1a2e"
 OPTIMAL_COLOR = "#2ca02c"
 
 
-def _has_ffmpeg() -> bool:
+def has_ffmpeg() -> bool:
+    """True if `ffmpeg` is on PATH. Used by main.py to decide whether to
+    invoke the animation stage."""
     return shutil.which("ffmpeg") is not None
 
 
@@ -50,7 +52,21 @@ def _is_valid_target(tgt) -> bool:
 
 
 def build_animation(classified_path: str, output_path: str,
+                    analysis_path: str = None,
                     fps: int = 5, seed: int = 42):
+    """Build the side-by-side animation MP4.
+
+    classified_path:  path to classified_trace.json (drives left panel)
+    output_path:      where to write the MP4
+    analysis_path:    optional path to analysis_report.json. When provided,
+                      the right panel shows the TRUE oracle optimal path
+                      (from the solver), walked in optimal order. When
+                      omitted, the right panel falls back to using the
+                      productive steps from the classified trace — which
+                      is correct only for runs that completed all goals.
+    fps:              animation frame rate
+    seed:             layout seed for reproducible node positions
+    """
     with open(classified_path) as f:
         trace = json.load(f)
 
@@ -58,17 +74,30 @@ def build_animation(classified_path: str, output_path: str,
         print(f"Empty classified trace at {classified_path}", file=sys.stderr)
         return False
 
-    # The "actual" timeline is every step.
+    # The "actual" timeline is every step (left panel).
     actual_timeline = trace
-    # The "optimal" timeline is just the productive steps (those that
-    # consumed an optimal-path step), ordered by their optimal_step index
-    # so the right panel walks the optimal path in true order regardless
-    # of the LLM's batching.
-    optimal_timeline = sorted(
-        [s for s in trace
-         if s.get("taxonomy_label") == "PRODUCTIVE" and s.get("optimal_step")],
-        key=lambda s: s["optimal_step"],
-    )
+
+    # The "optimal" timeline (right panel) prefers the true oracle path
+    # from analysis_report.json. This is important for incomplete runs:
+    # a run that stopped halfway has only some PRODUCTIVE steps, and
+    # using just those would misrepresent the optimal path. Falling
+    # back to productive-only is a last resort.
+    optimal_timeline = None
+    if analysis_path:
+        try:
+            with open(analysis_path) as f:
+                analysis = json.load(f)
+            optimal_timeline = analysis.get("optimal_path", {}).get("steps") or None
+        except Exception as e:
+            print(f"Warning: could not load optimal path from "
+                  f"{analysis_path}: {e}", file=sys.stderr)
+    if optimal_timeline is None:
+        optimal_timeline = sorted(
+            [s for s in trace
+             if s.get("taxonomy_label") == "PRODUCTIVE"
+             and s.get("optimal_step")],
+            key=lambda s: s["optimal_step"],
+        )
 
     # Collect edges from each timeline. We treat src->tgt where both are
     # valid nodes; otherwise we add the source as a standalone node.
@@ -203,9 +232,12 @@ def build_animation(classified_path: str, output_path: str,
         metadata=dict(title="Attack Trajectory"),
         bitrate=1800,
     )
-    anim.save(output_path, writer=writer)
-    print(f"Saved {output_path}")
-    return True
+    try:
+        anim.save(output_path, writer=writer)
+        print(f"Saved {output_path}")
+        return True
+    finally:
+        plt.close(fig)
 
 
 def main():
@@ -213,6 +245,12 @@ def main():
         description="Render a side-by-side trajectory animation MP4.")
     parser.add_argument("classified_trace", nargs="?",
                         default="classified_trace.json")
+    parser.add_argument("analysis_report", nargs="?",
+                        default="analysis_report.json",
+                        help="Optional. When provided, the right panel "
+                             "shows the true oracle optimal path. Without "
+                             "it, falls back to the productive subset of "
+                             "the classified trace.")
     parser.add_argument("-o", "--output", default="attack_trajectory.mp4")
     parser.add_argument("--fps", type=int, default=5,
                         help="Animation frame rate (default: 5).")
@@ -220,7 +258,7 @@ def main():
                         help="Layout seed for reproducible node positions.")
     args = parser.parse_args()
 
-    if not _has_ffmpeg():
+    if not has_ffmpeg():
         print("ffmpeg not found on PATH; skipping animation. "
               "Install ffmpeg to enable this output.", file=sys.stderr)
         sys.exit(2)
@@ -230,7 +268,11 @@ def main():
               file=sys.stderr)
         sys.exit(1)
 
+    analysis_arg = (args.analysis_report
+                    if Path(args.analysis_report).exists() else None)
+
     ok = build_animation(args.classified_trace, args.output,
+                         analysis_path=analysis_arg,
                          fps=args.fps, seed=args.seed)
     sys.exit(0 if ok else 1)
 
