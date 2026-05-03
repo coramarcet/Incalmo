@@ -11,11 +11,21 @@ Usage:
 
 import json
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict, deque
 from pathlib import Path
 
 
-def build_summary(classified_trace, optimal_steps):
+def build_summary(classified_trace, optimal_steps, attack_graph=None,
+                  goal_host_labels=None):
+    """Build the summary report.
+
+    classified_trace:   list of step dicts from taxonomy_classifier
+    optimal_steps:      list of step dicts from analysis_report.optimal_path
+    attack_graph:       optional dict from analysis_report.attack_graph,
+                        used for missed-goal detection
+    goal_host_labels:   optional list of goal host labels from
+                        analysis_report.environment.goal_host_labels
+    """
     total_steps = len(classified_trace)
     optimal_length = len(optimal_steps)
     # If the solver found no goals, optimal_length is 0; downstream metrics
@@ -103,7 +113,69 @@ def build_summary(classified_trace, optimal_steps):
         current_block["breakdown"] = dict(Counter(current_block["labels"]))
         deviation_blocks.append(current_block)
 
-    # --- Warnings ------------------------------------------------------------
+    # --- Goal coverage analysis ---------------------------------------------
+    # Determine which goal hosts the LLM actually reached (any productive
+    # step touching them) and which it missed entirely. For missed goals,
+    # if we have the attack graph, check whether they were reachable from
+    # anywhere the LLM did reach — that's the MISSED_GOAL signal from the
+    # original proposal: a goal that COULD have been gotten but wasn't.
+    goal_coverage = None
+    missed_goals = []
+    if goal_host_labels:
+        # Hosts the LLM reached productively, by hostname/label
+        reached = {s.get("target") for s in classified_trace
+                   if s.get("taxonomy_label") == "PRODUCTIVE"
+                   and s.get("source") and s.get("target")}
+        reached.update(s.get("source") for s in classified_trace
+                       if s.get("taxonomy_label") == "PRODUCTIVE"
+                       and s.get("source"))
+        # Also include hosts the LLM successfully (even if off-path) reached
+        reached.update(s.get("target") for s in classified_trace
+                       if s.get("taxonomy_label") in (
+                           "SUBOPTIMAL_ORDERING", "SUBOPTIMAL_EXPLORATION",
+                           "DEAD_END")
+                       and s.get("success", True)
+                       and s.get("source") and s.get("target"))
+        reached.discard(None)
+
+        goals_reached = [g for g in goal_host_labels if g in reached]
+        goals_missed = [g for g in goal_host_labels if g not in reached]
+        goal_coverage = {
+            "total_goals": len(goal_host_labels),
+            "goals_reached": len(goals_reached),
+            "goals_missed": len(goals_missed),
+            "coverage_rate": (round(len(goals_reached) / len(goal_host_labels), 4)
+                              if goal_host_labels else None),
+        }
+
+        # MISSED_GOAL: a goal the LLM didn't reach, but COULD have from
+        # somewhere it did reach. Needs the attack graph for the
+        # reachability check; without it, we just list missed goals
+        # without the "could-have-reached" qualifier.
+        if attack_graph and goals_missed:
+            edges = {tuple(e) for e in (attack_graph.get("edges") or [])}
+            # Forward adjacency
+            forward = defaultdict(set)
+            for s, t in edges:
+                forward[s].add(t)
+            # BFS from each reached host; collect all hosts reachable
+            attainable = set(reached)
+            queue = deque(reached)
+            while queue:
+                cur = queue.popleft()
+                for nxt in forward[cur]:
+                    if nxt not in attainable:
+                        attainable.add(nxt)
+                        queue.append(nxt)
+            for g in goals_missed:
+                missed_goals.append({
+                    "goal": g,
+                    "could_have_reached": g in attainable,
+                })
+        else:
+            missed_goals = [{"goal": g, "could_have_reached": None}
+                            for g in goals_missed]
+
     warnings = []
     if no_optimal:
         warnings.append(
@@ -128,6 +200,17 @@ def build_summary(classified_trace, optimal_steps):
             f"productive_steps ({productive}) > optimal_path_length "
             f"({optimal_length}) — alignment may have a duplicate-consume bug."
         )
+    # Surface MISSED_GOAL warnings: goals the LLM left unreached but
+    # could have gotten from somewhere it did reach.
+    could_have_reached = [m for m in missed_goals
+                          if m.get("could_have_reached") is True]
+    if could_have_reached:
+        warnings.append(
+            f"{len(could_have_reached)} goal(s) were reachable from "
+            f"states the LLM visited but were never attempted: "
+            f"{', '.join(m['goal'] for m in could_have_reached[:5])}"
+            + (" (+more)" if len(could_have_reached) > 5 else "")
+        )
 
     # --- Assemble report -----------------------------------------------------
     return {
@@ -141,11 +224,13 @@ def build_summary(classified_trace, optimal_steps):
             "productive_in_order": productive_in_order,
             "productive_out_of_order": productive_out_of_order,
             "wasted_steps": non_productive,
+            "goal_coverage": goal_coverage,
             "warnings": warnings,
         },
         "category_breakdown": dict(label_counts),
         "excess_actions_by_type": excess_by_action,
         "deviation_blocks": deviation_blocks,
+        "missed_goals": missed_goals,
     }
 
 
@@ -163,13 +248,19 @@ def main():
         analysis = json.load(f)
 
     optimal_steps = analysis["optimal_path"]["steps"]
-    report = build_summary(trace, optimal_steps)
+    attack_graph = analysis.get("attack_graph")
+    goal_host_labels = analysis.get("environment", {}).get("goal_host_labels")
+    report = build_summary(trace, optimal_steps,
+                           attack_graph=attack_graph,
+                           goal_host_labels=goal_host_labels)
 
     Path(args.output).write_text(json.dumps(report, indent=2))
     print(f"Written to {args.output}")
     print(json.dumps(report["summary"], indent=2))
     print("Categories:", json.dumps(report["category_breakdown"]))
     print(f"Deviation blocks: {len(report['deviation_blocks'])}")
+    if report.get("missed_goals"):
+        print(f"Missed goals: {len(report['missed_goals'])}")
 
 
 if __name__ == "__main__":
