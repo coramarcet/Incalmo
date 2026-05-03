@@ -1,205 +1,124 @@
+"""
+Trajectory Timeline Plot
+
+Plots the LLM's actual progress (optimal-step consumed) vs actual step number,
+colored by taxonomy label. The dashed diagonal is perfect efficiency.
+
+Usage:
+    python generate_graph.py [classified_trace.json] [analysis_report.json] [-o trajectory_timeline.png]
+"""
+
+import argparse
 import json
-import networkx as nx
+import sys
+
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.animation import FuncAnimation, FFMpegWriter
 
-# --- Load trace ---
-with open("classified_trace.json") as f:
-    trace = json.load(f)
 
-# --- Color mapping ---
-color_map = {
-    "PRODUCTIVE": "#2ecc71",
-    "IRRELEVANT_DEAD_END": "#e74c3c",
-    "FAILED_EXECUTION": "#e67e22",
-    "REDUNDANT_FRONTIER_DECAY": "#9b59b6",
+# Color mapping by current taxonomy labels
+COLOR_MAP = {
+    "PRODUCTIVE": "#2ca02c",             # green
+    "SUBOPTIMAL_EXPLORATION": "#d62728", # red
+    "FAILED_EXECUTION": "#ff7f0e",       # orange
+    "REDUNDANT": "#9467bd",              # purple
 }
-default_color = "gray"
+DEFAULT_COLOR = "gray"
 
-# --- Separate actual and optimal steps ---
-actual_steps = trace  # all 156 steps
 
-optimal_steps = [s for s in trace if s.get("status") == "MATCH"]
+def plot_trajectory(classified_path, analysis_path, output_path):
+    with open(classified_path) as f:
+        trace = json.load(f)
+    with open(analysis_path) as f:
+        analysis = json.load(f)
 
-# Build optimal path as explicit edges using optimal_target where available
-# For MATCH steps, source->target is the correct move
-optimal_edges_ordered = []
-for s in optimal_steps:
-    src = s.get("source")
-    tgt = s.get("target")
-    if src and tgt and tgt != "unknown":
-        optimal_edges_ordered.append((src, tgt, s))
+    optimal_length = analysis.get("optimal_path", {}).get("total_steps", 0)
 
-actual_edges_ordered = []
-for s in actual_steps:
-    src = s.get("source")
-    tgt = s.get("target")
-    if src and tgt and tgt != "unknown":
-        actual_edges_ordered.append((src, tgt, s))
+    if not trace:
+        print("Empty trace — nothing to plot.", file=sys.stderr)
+        return
 
-# --- Build full graphs for layout ---
-G_actual = nx.DiGraph()
-for src, tgt, _ in actual_edges_ordered:
-    G_actual.add_edge(src, tgt)
+    steps = []
+    optimal_progress = []
+    colors = []
 
-optimal_steps_ordered = [s for s in trace if s.get("status") == "MATCH"]
-print(len(optimal_steps_ordered))
-G_optimal = nx.DiGraph()
-for s in optimal_steps_ordered:
-    src = s.get("source")
-    tgt = s.get("target")
-    if src and tgt and tgt != "unknown":
-        G_optimal.add_edge(src, tgt)
-    elif src:  # self-loop or unknown target — still add the node
-        G_optimal.add_node(src)
+    last_optimal = 0
+    for entry in trace:
+        step_num = entry["step"]
+        label = entry.get("taxonomy_label", "UNKNOWN")
 
-# Build a combined graph for layout so shared nodes appear in same position
-G_combined = nx.DiGraph()
-for src, tgt, _ in actual_edges_ordered:
-    G_combined.add_edge(src, tgt)
-for src, tgt, _ in optimal_edges_ordered:
-    G_combined.add_edge(src, tgt)
+        # Productive steps consume an optimal-path index; advance the line.
+        if label == "PRODUCTIVE" and entry.get("optimal_step"):
+            last_optimal = max(last_optimal, entry["optimal_step"])
 
-# Single layout used by both panels
-shared_pos = nx.spring_layout(G_combined, seed=42, k=2)
+        steps.append(step_num)
+        optimal_progress.append(last_optimal)
+        colors.append(COLOR_MAP.get(label, DEFAULT_COLOR))
 
-# Both panels use the same positions
-pos_actual = shared_pos
-pos_optimal = shared_pos
+    total_steps = steps[-1]
 
-# --- Setup figure with two side-by-side panels ---
-fig, (ax_actual, ax_optimal) = plt.subplots(1, 2, figsize=(20, 9))
-fig.patch.set_facecolor("#1a1a2e")  # dark background
+    fig, ax = plt.subplots(figsize=(16, 8))
 
-for ax in (ax_actual, ax_optimal):
-    ax.set_facecolor("#1a1a2e")
-    ax.set_xticks([])
-    ax.set_yticks([])
-    for spine in ax.spines.values():
-        spine.set_visible(False)
+    # Ideal diagonal — perfect efficiency: each actual step advances optimal by 1.
+    # Skip the diagonal if there's no optimal path (run 3 / no-goals case).
+    if optimal_length > 0:
+        ax.plot([0, optimal_length], [0, optimal_length],
+                color="#2ca02c", linewidth=2, linestyle="--",
+                label="Perfect Efficiency (Ideal)", zorder=2, alpha=0.7)
 
-ax_actual.set_title("LLM Actual Path", color="white", fontsize=14, pad=12)
-ax_optimal.set_title("Optimal Path", color="white", fontsize=14, pad=12)
+    # Actual progress in light gray
+    ax.plot(steps, optimal_progress, color="lightgray", linewidth=1.5, zorder=1)
 
-# Step counter text
-step_text_actual = ax_actual.text(
-    0.02, 0.97, "", transform=ax_actual.transAxes,
-    color="white", fontsize=10, verticalalignment="top"
-)
-step_text_optimal = ax_optimal.text(
-    0.02, 0.97, "", transform=ax_optimal.transAxes,
-    color="white", fontsize=10, verticalalignment="top"
-)
+    # Each step as a colored dot
+    for i in range(len(steps)):
+        ax.scatter(steps[i], optimal_progress[i], color=colors[i],
+                   s=40, zorder=3, linewidths=0)
 
-# Legend
-legend_handles = [
-    mpatches.Patch(color="#2ecc71", label="PRODUCTIVE"),
-    mpatches.Patch(color="#e74c3c", label="IRRELEVANT_DEAD_END"),
-    mpatches.Patch(color="#e67e22", label="FAILED_EXECUTION"),
-    mpatches.Patch(color="#9b59b6", label="REDUNDANT_FRONTIER_DECAY"),
-    mpatches.Patch(color="gray", label="Not yet visited"),
-]
-fig.legend(handles=legend_handles, loc="lower center", ncol=5,
-           fontsize=9, facecolor="#2c2c54", labelcolor="white",
-           framealpha=0.8, bbox_to_anchor=(0.5, 0.01))
+    # Title varies by whether we have an optimal path to compare against
+    if optimal_length > 0:
+        eff = optimal_length / total_steps
+        title = (f"LLM Attack Trajectory vs. Optimal Path  "
+                 f"(actual={total_steps}, optimal={optimal_length}, "
+                 f"efficiency={eff:.1%})")
+    else:
+        title = (f"LLM Attack Trajectory  (actual={total_steps}, "
+                 f"no optimal path available)")
 
-plt.suptitle("LLM Attack Trajectory vs. Optimal Path",
-             color="white", fontsize=16, y=1.01)
+    ax.set_xlabel("LLM Step Number (Actual Actions Taken)", fontsize=12)
+    ax.set_ylabel("Optimal Path Progress (Steps Completed)", fontsize=12)
+    ax.set_title(title, fontsize=13)
+    ax.set_xlim(0, total_steps + 2)
+    # Use observed max progress when no optimal path; clamp ymax to keep
+    # the plot readable.
+    ymax = max(optimal_length, max(optimal_progress) if optimal_progress else 0, 1)
+    ax.set_ylim(0, ymax + 2)
+    ax.grid(True, linestyle=":", alpha=0.5)
 
-# --- Track state across frames ---
-actual_edge_colors = {}   # edge -> color
-optimal_edge_colors = {}
-actual_node_colors = {}   # node -> color
-optimal_node_colors = {}
+    legend_handles = [
+        mpatches.Patch(color="#2ca02c", label="PRODUCTIVE"),
+        mpatches.Patch(color="#d62728", label="SUBOPTIMAL_EXPLORATION"),
+        mpatches.Patch(color="#ff7f0e", label="FAILED_EXECUTION"),
+        mpatches.Patch(color="#9467bd", label="REDUNDANT (frontier decay)"),
+    ]
+    if optimal_length > 0:
+        legend_handles.append(plt.Line2D(
+            [0], [0], color="#2ca02c", linestyle="--",
+            label="Ideal (Perfect Efficiency)"))
+    ax.legend(handles=legend_handles, loc="upper left", fontsize=10)
 
-#total_frames = max(len(actual_edges_ordered), len(optimal_edges_ordered))
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    print(f"Saved {output_path}")
 
-def draw_panel(ax, G, pos, edge_colors, node_colors, step_text, frame_label):
-    ax.clear()
-    ax.set_facecolor("#1a1a2e")
-    ax.set_xticks([])
-    ax.set_yticks([])
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    ax.set_title(frame_label, color="white", fontsize=14, pad=12)
 
-    # Node colors
-    nc = [node_colors.get(n, "#4a4a6a") for n in G.nodes()]
-    nx.draw_networkx_nodes(G, pos, ax=ax, node_color=nc,
-                           node_size=600, alpha=0.95)
-    nx.draw_networkx_labels(G, pos, ax=ax, font_size=5,
-                            font_color="white")
+def main():
+    parser = argparse.ArgumentParser(description="Plot trajectory timeline")
+    parser.add_argument("classified_trace", nargs="?", default="classified_trace.json")
+    parser.add_argument("analysis_report", nargs="?", default="analysis_report.json")
+    parser.add_argument("-o", "--output", default="trajectory_timeline.png")
+    args = parser.parse_args()
+    plot_trajectory(args.classified_trace, args.analysis_report, args.output)
 
-    # Edge colors
-    edges = list(G.edges())
-    ec = [edge_colors.get(e, "#3a3a5a") for e in edges]
-    nx.draw_networkx_edges(G, pos, ax=ax, edgelist=edges,
-                           edge_color=ec, arrows=True,
-                           arrowsize=15, width=2,
-                           connectionstyle="arc3,rad=0.1")
 
-actual_steps_ordered = trace  # all 156
-
-total_frames = max(len(actual_steps_ordered), len(optimal_steps_ordered))
-
-def update(frame):
-    # --- Actual panel ---
-    if frame < len(actual_steps_ordered):
-        step = actual_steps_ordered[frame]
-        src = step.get("source")
-        tgt = step.get("target")
-        label = step.get("taxonomy_label", "UNKNOWN")
-        color = color_map.get(label, default_color)
-
-        # Always color the source node
-        if src:
-            actual_node_colors[src] = color
-
-        # Only add edge if target is valid and different from source
-        if tgt and tgt != "unknown":
-            actual_edge_colors[(src, tgt)] = color
-            actual_node_colors[tgt] = color
-
-    draw_panel(ax_actual, G_actual, pos_actual,
-               actual_edge_colors, actual_node_colors,
-               step_text_actual, "LLM Actual Path")
-
-    ax_actual.text(0.02, 0.97,
-                   f"Step {min(frame + 1, len(actual_steps_ordered))} / {len(actual_steps_ordered)}",
-                   transform=ax_actual.transAxes, color="white",
-                   fontsize=10, verticalalignment="top")
-
-    # --- Optimal panel ---
-    if frame < len(optimal_steps_ordered):
-        step = optimal_steps_ordered[frame]
-        src = step.get("source")
-        tgt = step.get("target")
-        color = "#2ecc71"
-
-        if src:
-            optimal_node_colors[src] = color
-
-        if tgt and tgt != "unknown":
-            optimal_edge_colors[(src, tgt)] = color
-            optimal_node_colors[tgt] = color
-
-    draw_panel(ax_optimal, G_optimal, pos_optimal,
-               optimal_edge_colors, optimal_node_colors,
-               step_text_optimal, "Optimal Path")
-
-    ax_optimal.text(0.02, 0.97,
-                    f"Step {min(frame + 1, len(optimal_steps_ordered))} / {len(optimal_steps_ordered)}",
-                    transform=ax_optimal.transAxes, color="white",
-                    fontsize=10, verticalalignment="top")
-
-# --- Animate ---
-# interval = milliseconds per frame (lower = faster)
-anim = FuncAnimation(fig, update, frames=total_frames,
-                     interval=300, repeat=False)
-
-plt.tight_layout()
-
-writer = FFMpegWriter(fps=5, metadata=dict(title="Attack Trajectory"), bitrate=1800)
-anim.save("attack_trajectory.mp4", writer=writer)
-print("Saved attack_trajectory.mp4")
+if __name__ == "__main__":
+    main()

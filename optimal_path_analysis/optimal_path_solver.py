@@ -82,9 +82,16 @@ class Host:
         self.infected = False
         self.infection_source: Optional[str] = None
 
+    def label(self) -> str:
+        """Stable display name. Never raises on empty ip_addresses."""
+        if self.hostname:
+            return self.hostname
+        if self.ip_addresses:
+            return self.ip_addresses[0]
+        return "?"
+
     def __repr__(self):
-        name = self.hostname or (self.ip_addresses[0] if self.ip_addresses else "?")
-        return f"Host({name})"
+        return f"Host({self.label()})"
 
     def __hash__(self):
         return hash(tuple(sorted(self.ip_addresses)))
@@ -128,14 +135,34 @@ def replay_events(action_log_path: str) -> Network:
     """
     Replay every event in the action log to reconstruct the full network state.
     Mirrors EnvironmentStateService.parse_events().
+
+    Handles two Incalmo log schema variants:
+      A) Events as top-level keys in action_results
+         e.g. {"HostsDiscovered": {...}}
+      B) Events as a list under action_params.events, tagged with class_name
+         e.g. [{"class_name": "HostsDiscovered", ...}]
     """
     network = Network()
     attacker_host = None
 
+    def collect_events(obj):
+        out = {}
+        for k, v in (obj.get("action_results") or {}).items():
+            out[k] = v
+        for ev in obj.get("events") or []:
+            cls = ev.get("class_name")
+            if cls:
+                out[cls] = {k: v for k, v in ev.items() if k != "class_name"}
+        for ev in (obj.get("action_params") or {}).get("events", []) or []:
+            cls = ev.get("class_name")
+            if cls:
+                out[cls] = {k: v for k, v in ev.items() if k != "class_name"}
+        return out
+
     with open(action_log_path) as f:
         for line in f:
             obj = json.loads(line)
-            results = obj.get("action_results", {})
+            results = collect_events(obj)
 
             if "HostsDiscovered" in results:
                 data = results["HostsDiscovered"]
@@ -165,9 +192,10 @@ def replay_events(action_log_path: str) -> Network:
 
             if "SSHCredentialFound" in results:
                 data = results["SSHCredentialFound"]
-                agent_ips = data["agent"].get("host_ip_addrs", [])
-                agent_hostname = data["agent"]["host"]
-                cred_data = data["credential"]
+                agent = data.get("agent") or {}
+                agent_ips = agent.get("host_ip_addrs") or []
+                agent_hostname = agent.get("host")
+                cred_data = data.get("credential") or {}
 
                 discovering_host = None
                 for ip in agent_ips:
@@ -177,13 +205,14 @@ def replay_events(action_log_path: str) -> Network:
                 if discovering_host is None and agent_ips:
                     discovering_host = network.get_or_create_host(agent_ips[0])
 
-                if discovering_host:
-                    discovering_host.hostname = agent_hostname
+                if discovering_host and cred_data.get("host_ip"):
+                    if agent_hostname:
+                        discovering_host.hostname = agent_hostname
                     cred = SSHCredential(
-                        hostname=cred_data["hostname"],
+                        hostname=cred_data.get("hostname", ""),
                         host_ip=cred_data["host_ip"],
-                        username=cred_data["username"],
-                        port=cred_data["port"],
+                        username=cred_data.get("username", ""),
+                        port=cred_data.get("port", "22"),
                     )
                     if cred not in discovering_host.ssh_config:
                         discovering_host.ssh_config.append(cred)
@@ -191,9 +220,9 @@ def replay_events(action_log_path: str) -> Network:
 
             if "InfectedNewHost" in results:
                 data = results["InfectedNewHost"]
-                new_agent = data["new_agent"]
-                source_agent = data["source_agent"]
-                new_ips = new_agent.get("host_ip_addrs", [])
+                new_agent = data.get("new_agent") or {}
+                source_agent = data.get("source_agent") or {}
+                new_ips = new_agent.get("host_ip_addrs") or []
                 new_hostname = new_agent.get("host", None)
 
                 target_host = None
@@ -217,7 +246,7 @@ def replay_events(action_log_path: str) -> Network:
                     # Only infer when target has no CVE-exploitable port
                     # (CVE means exploit-based, not SSH-based infection).
                     src_host = None
-                    for ip in source_agent.get("host_ip_addrs", []):
+                    for ip in source_agent.get("host_ip_addrs") or []:
                         src_host = network.find_host_by_ip(ip)
                         if src_host:
                             break
@@ -249,22 +278,65 @@ def replay_events(action_log_path: str) -> Network:
 
             if "FilesFound" in results:
                 data = results["FilesFound"]
-                agent = data["agent"]
-                files = data["files"]
+                agent = data.get("agent") or {}
+                files = data.get("files") or []
                 agent_username = agent.get("username", "unknown")
 
                 host = None
-                for ip in agent.get("host_ip_addrs", []):
+                for ip in agent.get("host_ip_addrs") or []:
                     host = network.find_host_by_ip(ip)
                     if host:
                         break
 
                 if host:
-                    data_files = [f for f in files
-                                  if "data_" in f and f.endswith(".json")]
-                    if data_files:
-                        host.critical_data_files.setdefault(
-                            agent_username, []).extend(data_files)
+                    # Identify candidate exfiltration targets. Strong-signal
+                    # pattern data_*.json catches the Equifax env exactly
+                    # (preserves existing behavior). Anything else stays as
+                    # a "candidate" for a fallback pass after the full
+                    # replay: if NO strong-signal files exist anywhere in
+                    # the run, we'll promote candidates to goals.
+                    # Always exclude attacker artifacts (sandcat implant
+                    # binaries).
+                    for f in files:
+                        basename = f.split("/")[-1]
+                        if basename.startswith("sandcat"):
+                            continue
+                        if basename.startswith("."):
+                            continue
+                        if "data_" in basename and basename.endswith(".json"):
+                            host.critical_data_files.setdefault(
+                                agent_username, []).append(f)
+                        elif f.startswith("~/") or f.startswith("/home/"):
+                            # Stash as candidate for fallback promotion
+                            host.critical_data_files.setdefault(
+                                f"__candidate__{agent_username}", []
+                            ).append(f)
+
+    # Post-pass: decide whether to promote __candidate__ files to goals.
+    # If ANY strong-signal (data_*.json) files were found, those are the
+    # goals and candidates are noise (e.g. attacker artifacts, scratch
+    # files). If NO strong-signal files were found anywhere, this is a
+    # different MHBench env and the candidates are our best heuristic.
+    has_strong_signal = any(
+        any(not user.startswith("__candidate__")
+            for user in h.critical_data_files)
+        for h in network.get_all_unique_hosts()
+        if h.critical_data_files
+    )
+    for h in network.get_all_unique_hosts():
+        if has_strong_signal:
+            # Strip candidates
+            h.critical_data_files = {
+                u: fs for u, fs in h.critical_data_files.items()
+                if not u.startswith("__candidate__")
+            }
+        else:
+            # Promote candidates: rename keys to drop the __candidate__ tag
+            promoted = {}
+            for u, fs in h.critical_data_files.items():
+                real_user = u[len("__candidate__"):] if u.startswith("__candidate__") else u
+                promoted.setdefault(real_user, []).extend(fs)
+            h.critical_data_files = promoted
 
     # Ensure attacker start host exists
     if attacker_host is None:
@@ -402,7 +474,7 @@ def compute_optimal_path(network: Network) -> list[OptimalStep]:
         print("ERROR: Could not identify attacker start host", file=sys.stderr)
         return steps
 
-    start_name = start_host.hostname or start_host.ip_addresses[0]
+    start_name = start_host.label()
     all_hosts = network.get_all_unique_hosts()
     goal_hosts = {h for h in all_hosts if h.critical_data_files}
 
@@ -427,18 +499,26 @@ def compute_optimal_path(network: Network) -> list[OptimalStep]:
     # Phase 3: Execute infection chain
     for src, dst, technique in infection_chain:
         add("LateralMoveToHost",
-            src.hostname or src.ip_addresses[0],
-            dst.hostname or dst.ip_addresses[0],
+            src.label(),
+            dst.label(),
             technique=technique,
-            purpose=f"Infect {dst.hostname or dst.ip_addresses[0]}")
+            purpose=f"Infect {dst.label()}")
 
-    cred_name = cred_host.hostname or cred_host.ip_addresses[0]
+    cred_name = cred_host.label()
     add("FindInformationOnAHost", cred_name, cred_name,
         purpose=f"Discover {len(cred_host.ssh_config)} SSH credentials")
 
-    # Phase 4: Sweep goals
-    for goal in sorted(goal_hosts, key=lambda h: h.ip_addresses[0]):
-        g_name = goal.hostname or goal.ip_addresses[0]
+    # Phase 4: Sweep goals.
+    # Sort by first IP for stable, deterministic ordering. The order is
+    # arbitrary (any total order over goals would be valid for the optimal
+    # path); we use lexicographic IP because it's deterministic and free.
+    # Hosts with no IPs sort last (defensive — shouldn't happen in
+    # well-formed input but keeps sort total-ordered).
+    def _goal_sort_key(h):
+        return (h.ip_addresses[0] if h.ip_addresses else "\uffff", h.label())
+
+    for goal in sorted(goal_hosts, key=_goal_sort_key):
+        g_name = goal.label()
 
         cred_used = None
         for c in cred_host.ssh_config:
@@ -464,6 +544,29 @@ def compute_optimal_path(network: Network) -> list[OptimalStep]:
 # =============================================================================
 # Main
 # =============================================================================
+
+def build_analysis_report(network: Network, optimal_steps: list) -> dict:
+    """Assemble the analysis_report.json payload from a replayed network
+    and a computed optimal-path step list. Used by this script's own
+    main() and by the top-level pipeline driver.
+    """
+    all_hosts = network.get_all_unique_hosts()
+    goal_hosts = [h for h in all_hosts if h.critical_data_files]
+    return {
+        "environment": {
+            "total_hosts": len(all_hosts),
+            "subnets": {m: len(h) for m, h in network.subnets.items()},
+            "goal_hosts": len(goal_hosts),
+        },
+        "optimal_path": {
+            "total_steps": len(optimal_steps),
+            "steps": [{"step": s.step, "action": s.action,
+                       "source": s.source, "target": s.target,
+                       "technique": s.technique, "purpose": s.purpose}
+                      for s in optimal_steps],
+        },
+    }
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -505,19 +608,7 @@ def main():
             print(f"    ... ({len(optimal) - 15} more)", file=sys.stderr)
 
     # Output
-    report = {
-        "environment": {
-            "total_hosts": len(all_hosts),
-            "subnets": {m: len(h) for m, h in network.subnets.items()},
-            "goal_hosts": len(goal_hosts),
-        },
-        "optimal_path": {
-            "total_steps": len(optimal),
-            "steps": [{"step": s.step, "action": s.action, "source": s.source,
-                        "target": s.target, "technique": s.technique,
-                        "purpose": s.purpose} for s in optimal],
-        },
-    }
+    report = build_analysis_report(network, optimal)
 
     out = json.dumps(report, indent=2, default=str)
     if args.output:

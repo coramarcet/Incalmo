@@ -8,7 +8,9 @@ all, then Exfil all) as productive reordering, not wasted actions.
 
 Input:  action_log.jsonl + analysis_report.json (from optimal path solver)
 Output: aligned_trace.json — every action tagged with a status:
-          MATCH / SUBOPTIMAL_ORDERING / DEVIATION / FAILED_EXECUTION
+          PRODUCTIVE / DEVIATION / FAILED_EXECUTION
+        Productive actions also carry an `out_of_order` flag if they
+        consumed an optimal step out of leftmost-first sequence.
 
 Usage:
     python trace_alignment_diff.py action_log.jsonl analysis_report.json [-o aligned_trace.json] [-v]
@@ -25,6 +27,25 @@ from pathlib import Path
 # =============================================================================
 # Data structures
 # =============================================================================
+
+
+def _first_ip(host_dict):
+    """Return first ip address from a host-shaped dict, or None.
+    Robust to missing key, None value, and empty list."""
+    if not host_dict:
+        return None
+    ips = host_dict.get("ip_addresses") or []
+    if ips:
+        return ips[0]
+    return host_dict.get("ip_address")
+
+
+def _host_label(host_dict):
+    """Return a stable display label for a host-shaped dict."""
+    if not host_dict:
+        return "?"
+    return host_dict.get("hostname") or _first_ip(host_dict) or "?"
+
 
 @dataclass
 class NormalizedAction:
@@ -54,24 +75,87 @@ class NormalizedAction:
 # Parse actual trace from action_log.jsonl
 # =============================================================================
 
+def _collect_events(entry):
+    """
+    Normalize event extraction across Incalmo log schema variants.
+
+    Schema A (action_log.jsonl): events live as top-level keys in
+        entry.action_results, e.g. {"InfectedNewHost": {...}, "FilesFound": {...}}.
+
+    Schema B (actions.json variant): events live as a list, each tagged
+        with class_name. The list can appear at the top level of the
+        entry (entry.events) or inside entry.action_params.events,
+        depending on the specific Incalmo build that produced the log.
+
+    Returns a dict keyed by event class name. When a class repeats within
+    one entry (multiple ServicesDiscoveredOnHost in one nmap call), the
+    last one wins for the dict-key collision case, but callers should
+    treat that as a known limitation (matches the original parser).
+    """
+    out = {}
+    # Schema A — events as keys in action_results
+    for k, v in (entry.get("action_results") or {}).items():
+        out[k] = v
+    # Schema B — events as a class_name-tagged list at top level
+    for ev in entry.get("events") or []:
+        cls = ev.get("class_name")
+        if cls:
+            out[cls] = {k: v for k, v in ev.items() if k != "class_name"}
+    # Schema B variant — events nested inside action_params
+    for ev in (entry.get("action_params") or {}).get("events", []) or []:
+        cls = ev.get("class_name")
+        if cls:
+            out[cls] = {k: v for k, v in ev.items() if k != "class_name"}
+    return out
+
+
 def parse_actual_trace(action_log_path: str) -> list[NormalizedAction]:
     """
     Parse action_log.jsonl into normalized actions.
-    InfectedNewHost events live on child LowLevelActions, not the parent
-    HighLevelAction — we check children to determine lateral move success.
+
+    InfectedNewHost / ExfiltratedData / etc events live on child
+    LowLevelActions, not the parent HighLevelAction. We group by
+    high_level_action_id so the parser is robust to log ordering
+    (LLs can appear before or after their parent HL).
     """
     entries = []
     with open(action_log_path) as f:
         for line in f:
             entries.append(json.loads(line))
 
-    # Group each HighLevelAction with its child LowLevelActions
-    hl_groups = []
-    for e in entries:
+    # Group LowLevelActions under their parent by high_level_action_id.
+    # Fall back to positional adjacency for malformed/legacy logs where
+    # ids are missing.
+    hl_entries = [e for e in entries if e["type"] == "HighLevelAction"]
+    hl_order = {e.get("high_level_action_id"): i
+                for i, e in enumerate(hl_entries)
+                if e.get("high_level_action_id")}
+
+    hl_groups = [{"entry": e, "children": []} for e in hl_entries]
+
+    # Pass 1: id-based attachment
+    attached = set()
+    for idx, e in enumerate(entries):
+        if e["type"] != "LowLevelAction":
+            continue
+        hl_id = e.get("high_level_action_id")
+        if hl_id and hl_id in hl_order:
+            hl_groups[hl_order[hl_id]]["children"].append(e)
+            attached.add(idx)
+
+    # Pass 2: positional fallback for any LL with empty/missing hl_id
+    # (only attaches to the most recent preceding HL, original behavior).
+    # We track position by counting HighLevelActions as we walk the entries
+    # in original order — this matches the order of hl_entries by construction.
+    last_hl_pos = -1
+    hl_seen = -1
+    for idx, e in enumerate(entries):
         if e["type"] == "HighLevelAction":
-            hl_groups.append({"entry": e, "children": []})
-        elif e["type"] == "LowLevelAction" and hl_groups:
-            hl_groups[-1]["children"].append(e)
+            hl_seen += 1
+            last_hl_pos = hl_seen
+        elif e["type"] == "LowLevelAction" and idx not in attached:
+            if last_hl_pos >= 0:
+                hl_groups[last_hl_pos]["children"].append(e)
 
     trace = []
     for i, group in enumerate(hl_groups):
@@ -79,48 +163,66 @@ def parse_actual_trace(action_log_path: str) -> list[NormalizedAction]:
         action = e["action_name"]
         params = e.get("action_params", {})
 
-        # Collect events from children + HL entry
+        # Collect events from children + HL entry, normalizing both
+        # Incalmo schema variants.
         child_events = {}
         for c in group["children"]:
-            for k, v in c.get("action_results", {}).items():
-                child_events[k] = v
-        for k, v in e.get("action_results", {}).items():
-            child_events[k] = v
+            child_events.update(_collect_events(c))
+        child_events.update(_collect_events(e))
 
         source = target = ""
         success = True
 
         if action == "Scan":
-            source = params.get("scan_host", {}).get("hostname", "?")
-            subs = params.get("subnets_to_scan", [])
-            target = subs[0].get("ip_mask", "?") if subs else "?"
+            scan_host = params.get("scan_host") or {}
+            source = _host_label(scan_host)
+            subs = params.get("subnets_to_scan") or []
+            target = (subs[0].get("ip_mask") if subs else None) or "?"
 
         elif action == "LateralMoveToHost":
-            src_host = params.get("attacking_host", {})
-            source = src_host.get("hostname") or (src_host.get("ip_addresses", [None])[0]) or "?"
+            src_host = params.get("attacking_host") or {}
+            source = _host_label(src_host)
             if "InfectedNewHost" in child_events:
-                target = child_events["InfectedNewHost"]["new_agent"]["host"]
+                # Defensive nested access; empty new_agent => "?"
+                new_agent = child_events["InfectedNewHost"].get("new_agent") or {}
+                target = new_agent.get("host") or _first_ip(new_agent) or "?"
             else:
                 t = params.get("host_to_attack") or params.get("target_host") or {}
-                target = t.get("hostname") or (t.get("ip_addresses", [None])[0]) or t.get("ip_address") or "unknown"
+                target = _host_label(t)
+                if target == "?":
+                    target = "unknown"
                 success = False
 
         elif action == "FindInformationOnAHost":
-            h = params.get("host", {})
-            source = target = h.get("hostname") or (h.get("ip_addresses", [None])[0]) or "?"
+            h = params.get("host") or {}
+            source = target = _host_label(h)
 
         elif action == "EscelatePrivledge":
-            h = params.get("host", {})
-            source = target = h.get("hostname") or (h.get("ip_addresses", [None])[0]) or "?"
+            h = params.get("host") or {}
+            source = target = _host_label(h)
 
         elif action == "ExfiltrateData":
             h = params.get("host") or params.get("target_host") or {}
-            source = h.get("hostname") or (h.get("ip_addresses", [None])[0]) or h.get("ip_address") or "?"
-            target = source
+            source = _host_label(h)
+            target = None
+            # Preferred: read filename from the ExfiltratedData event
             if "ExfiltratedData" in child_events:
-                f_name = child_events["ExfiltratedData"].get("file", "")
+                f_name = child_events["ExfiltratedData"].get("file", "") or ""
                 if f_name:
                     target = f_name
+            # Fallback: log gap (event missing or empty) — derive filename
+            # from the target host's critical_data_files. The optimal path
+            # writes targets like "data_database_25.json", so we strip the
+            # leading "~/" and any directory prefix to match.
+            if target is None:
+                cdf = h.get("critical_data_files") or {}
+                for _user, files in cdf.items():
+                    if files:
+                        f = files[0]
+                        target = f.split("/")[-1].lstrip("~").lstrip("/")
+                        break
+            if target is None:
+                target = source
 
         trace.append(NormalizedAction(
             step=i + 1, action=action, source=source, target=target,
@@ -154,10 +256,11 @@ def align_traces(
 ) -> list[dict]:
     """
     For each actual action:
-      1. Failed? -> FAILED_EXECUTION
-      2. Matches next unconsumed optimal step? -> MATCH
-      3. Matches any unconsumed optimal step? -> SUBOPTIMAL_ORDERING
-      4. No match? -> DEVIATION
+      1. Failed?                                  -> FAILED_EXECUTION
+      2. Matches some unconsumed optimal step?    -> PRODUCTIVE
+         (with `out_of_order=True` if it consumed an optimal step that
+         is not the leftmost unconsumed one, i.e. the LLM is batching)
+      3. No match against any unconsumed step?    -> DEVIATION
     """
     consumed = set()
     aligned = []
@@ -188,22 +291,16 @@ def align_traces(
                       f"{act.source} -> {act.target}", file=sys.stderr)
             continue
 
-        if opt_ptr is not None and act.matches(optimal[opt_ptr]):
-            consumed.add(opt_ptr)
-            entry = _make_entry(act, "MATCH", optimal[opt_ptr].step)
-            aligned.append(entry)
-            if verbose:
-                print(f"  MATCH    {act.step:3d} = opt {optimal[opt_ptr].step:3d}  "
-                      f"{act.action} -> {act.target}", file=sys.stderr)
-            continue
-
         match_idx = find_any_match(act)
         if match_idx is not None:
             consumed.add(match_idx)
-            entry = _make_entry(act, "SUBOPTIMAL_ORDERING", optimal[match_idx].step)
+            out_of_order = (match_idx != opt_ptr)
+            entry = _make_entry(act, "PRODUCTIVE", optimal[match_idx].step)
+            entry["out_of_order"] = out_of_order
             aligned.append(entry)
             if verbose:
-                print(f"  REORDER  {act.step:3d} = opt {optimal[match_idx].step:3d}  "
+                tag = "REORDER" if out_of_order else "MATCH  "
+                print(f"  {tag}  {act.step:3d} = opt {optimal[match_idx].step:3d}  "
                       f"{act.action} -> {act.target}", file=sys.stderr)
             continue
 
@@ -262,15 +359,17 @@ def main():
     for a in aligned:
         counts[a["status"]] = counts.get(a["status"], 0) + 1
 
-    matches = counts.get("MATCH", 0)
-    reordered = counts.get("SUBOPTIMAL_ORDERING", 0)
+    productive = counts.get("PRODUCTIVE", 0)
+    out_of_order = sum(1 for a in aligned
+                       if a["status"] == "PRODUCTIVE" and a.get("out_of_order"))
     deviations = counts.get("DEVIATION", 0)
     failures = counts.get("FAILED_EXECUTION", 0)
 
     print(f"\n{'='*50}", file=sys.stderr)
     print(f"  Actual: {total}   Optimal: {len(optimal)}", file=sys.stderr)
-    print(f"  Productive: {matches + reordered}  "
-          f"({matches} exact + {reordered} reordered)", file=sys.stderr)
+    print(f"  Productive: {productive}  "
+          f"({productive - out_of_order} in-order + {out_of_order} out-of-order)",
+          file=sys.stderr)
     print(f"  Wasted: {deviations + failures}  "
           f"({deviations} deviation + {failures} failed)", file=sys.stderr)
     print(f"  Efficiency: {len(optimal)/total:.1%}   "
