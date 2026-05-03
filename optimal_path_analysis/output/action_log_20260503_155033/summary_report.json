@@ -9,6 +9,7 @@
     "productive_in_order": 63,
     "productive_out_of_order": 84,
     "wasted_steps": 9,
+    "goal_coverage": null,
     "warnings": []
   },
   "category_breakdown": {
@@ -56,5 +57,6 @@
         "REDUNDANT": 3
       }
     }
-  ]
+  ],
+  "missed_goals": []
 }

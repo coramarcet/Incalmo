@@ -74,14 +74,27 @@ def _make_graph_predicates(graph):
     """Build cached predicates over the attack graph for fast per-step
     classification. Returns (has_edge, is_goal_reachable) functions.
     has_edge takes (action, source, target). is_goal_reachable takes
-    (action, target). Both return None if graph is None (signaling
-    fall-through to SUBOPTIMAL_EXPLORATION).
+    (action, target). Both return None if graph is None or degenerate
+    (signaling fall-through to SUBOPTIMAL_EXPLORATION).
+
+    A graph is "degenerate" if it has no edges AND no self-loop hosts.
+    This happens when the solver couldn't reconstruct the topology
+    (e.g., the attacker start host wasn't identified). Pretending such
+    a graph is authoritative would label every action IRRELEVANT, which
+    is misleading — the truth is we just don't have enough info.
     """
     if graph is None or not isinstance(graph, dict):
         return (lambda *_: None), (lambda *_: None)
 
-    edge_set = {tuple(e) for e in (graph.get("edges") or [])}
-    self_loop_hosts = set(graph.get("self_loop_hosts") or [])
+    edges = graph.get("edges") or []
+    self_loops = graph.get("self_loop_hosts") or []
+    if not edges and not self_loops:
+        # Degenerate graph — solver couldn't reconstruct topology.
+        # Behave the same as "no graph available" rather than over-flag.
+        return (lambda *_: None), (lambda *_: None)
+
+    edge_set = {tuple(e) for e in edges}
+    self_loop_hosts = set(self_loops)
     reachable_map = graph.get("goal_reachable") or {}
 
     def has_edge(action, source, target):
@@ -131,7 +144,10 @@ def classify_trace(aligned_trace, attack_graph=None):
         FAILED_EXECUTION as before).
     """
     has_edge, is_goal_reachable = _make_graph_predicates(attack_graph)
-    have_graph = attack_graph is not None
+    # have_graph = the predicates actually return a meaningful answer
+    # (not None). This is False both when attack_graph was None and
+    # when the graph was degenerate (empty edges + empty self-loops).
+    have_graph = has_edge("LateralMoveToHost", "_probe_src", "_probe_tgt") is not None
 
     memory = {key: set() for key in _REDUNDANCY_KEYS.values()}
     classified_trace = []

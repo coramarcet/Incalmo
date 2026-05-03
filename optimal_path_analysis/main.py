@@ -88,17 +88,26 @@ def run_pipeline(action_log: Path, output_root: Path, verbose: bool = False) -> 
 
     # ----- Stage 3: taxonomy classifier -----
     _say("[3/6] Classifying failures...", verbose)
-    classified, counts = tc.classify_trace(aligned)
+    classified, counts = tc.classify_trace(
+        aligned, attack_graph=analysis.get("attack_graph"))
     classified_path = run_dir / CLASSIFIED_TRACE
     classified_path.write_text(json.dumps(classified, indent=2))
-    _say(f"      productive={counts['PRODUCTIVE']}  "
-         f"failed={counts['FAILED_EXECUTION']}  "
-         f"redundant={counts['REDUNDANT']}  "
-         f"suboptimal={counts['SUBOPTIMAL_EXPLORATION']}", verbose)
+    # Build a verbose summary string from the (possibly extended) counts
+    parts = [f"productive={counts.get('PRODUCTIVE', 0)}"]
+    for k in ("FAILED_EXECUTION", "REDUNDANT", "IRRELEVANT",
+              "DEAD_END", "SUBOPTIMAL_ORDERING", "SUBOPTIMAL_EXPLORATION"):
+        if counts.get(k):
+            parts.append(f"{k.lower()}={counts[k]}")
+    _say("      " + "  ".join(parts), verbose)
 
     # ----- Stage 4: summary report -----
     _say("[4/6] Building summary report...", verbose)
-    summary = gr.build_summary(classified, analysis["optimal_path"]["steps"])
+    summary = gr.build_summary(
+        classified,
+        analysis["optimal_path"]["steps"],
+        attack_graph=analysis.get("attack_graph"),
+        goal_host_labels=analysis.get("environment", {}).get("goal_host_labels"),
+    )
     summary_path = run_dir / SUMMARY_REPORT
     summary_path.write_text(json.dumps(summary, indent=2))
     s = summary["summary"]

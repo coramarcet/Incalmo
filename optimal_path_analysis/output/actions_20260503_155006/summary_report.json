@@ -9,6 +9,7 @@
     "productive_in_order": 0,
     "productive_out_of_order": 0,
     "wasted_steps": 69,
+    "goal_coverage": null,
     "warnings": [
       "No optimal path computed (solver found 0 goal hosts). Run may have aborted before exfiltration phase, or log is from a different MHBench environment whose goal-file pattern is not recognized. path_efficiency is undefined."
     ]
@@ -178,5 +179,6 @@
         "REDUNDANT": 22
       }
     }
-  ]
+  ],
+  "missed_goals": []
 }
