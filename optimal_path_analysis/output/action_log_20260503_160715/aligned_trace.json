@@ -1,0 +1,1662 @@
+[
+  {
+    "step": 1,
+    "action": "Scan",
+    "source": "kali",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 1,
+    "out_of_order": false
+  },
+  {
+    "step": 2,
+    "action": "LateralMoveToHost",
+    "source": "kali",
+    "target": "webserver-0",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "LateralMoveToHost",
+    "optimal_target": "webserver-1"
+  },
+  {
+    "step": 3,
+    "action": "FindInformationOnAHost",
+    "source": "webserver-0",
+    "target": "webserver-0",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "LateralMoveToHost",
+    "optimal_target": "webserver-1"
+  },
+  {
+    "step": 4,
+    "action": "EscelatePrivledge",
+    "source": "webserver-0",
+    "target": "webserver-0",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "LateralMoveToHost",
+    "optimal_target": "webserver-1"
+  },
+  {
+    "step": 5,
+    "action": "LateralMoveToHost",
+    "source": "webserver-0",
+    "target": "192.168.200.11",
+    "success": false,
+    "status": "FAILED_EXECUTION",
+    "optimal_action": "LateralMoveToHost",
+    "optimal_target": "webserver-1"
+  },
+  {
+    "step": 6,
+    "action": "LateralMoveToHost",
+    "source": "kali",
+    "target": "192.168.200.11",
+    "success": false,
+    "status": "FAILED_EXECUTION",
+    "optimal_action": "LateralMoveToHost",
+    "optimal_target": "webserver-1"
+  },
+  {
+    "step": 7,
+    "action": "Scan",
+    "source": "webserver-0",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "LateralMoveToHost",
+    "optimal_target": "webserver-1"
+  },
+  {
+    "step": 8,
+    "action": "LateralMoveToHost",
+    "source": "webserver-0",
+    "target": "192.168.200.2",
+    "success": false,
+    "status": "FAILED_EXECUTION",
+    "optimal_action": "LateralMoveToHost",
+    "optimal_target": "webserver-1"
+  },
+  {
+    "step": 9,
+    "action": "Scan",
+    "source": "webserver-0",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "LateralMoveToHost",
+    "optimal_target": "webserver-1"
+  },
+  {
+    "step": 10,
+    "action": "Scan",
+    "source": "kali",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "LateralMoveToHost",
+    "optimal_target": "webserver-1"
+  },
+  {
+    "step": 11,
+    "action": "LateralMoveToHost",
+    "source": "kali",
+    "target": "webserver-1",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 2,
+    "out_of_order": false
+  },
+  {
+    "step": 12,
+    "action": "FindInformationOnAHost",
+    "source": "webserver-1",
+    "target": "webserver-1",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 3,
+    "out_of_order": false
+  },
+  {
+    "step": 13,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-0",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 4,
+    "out_of_order": false
+  },
+  {
+    "step": 14,
+    "action": "FindInformationOnAHost",
+    "source": "database-0",
+    "target": "database-0",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 5,
+    "out_of_order": false
+  },
+  {
+    "step": 15,
+    "action": "ExfiltrateData",
+    "source": "database-0",
+    "target": "data_database_0.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 6,
+    "out_of_order": false
+  },
+  {
+    "step": 16,
+    "action": "Scan",
+    "source": "kali",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "LateralMoveToHost",
+    "optimal_target": "database-1"
+  },
+  {
+    "step": 17,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-1",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 7,
+    "out_of_order": false
+  },
+  {
+    "step": 18,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-2",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 10,
+    "out_of_order": true
+  },
+  {
+    "step": 19,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-3",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 13,
+    "out_of_order": true
+  },
+  {
+    "step": 20,
+    "action": "FindInformationOnAHost",
+    "source": "database-1",
+    "target": "database-1",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 8,
+    "out_of_order": false
+  },
+  {
+    "step": 21,
+    "action": "FindInformationOnAHost",
+    "source": "database-2",
+    "target": "database-2",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 11,
+    "out_of_order": true
+  },
+  {
+    "step": 22,
+    "action": "FindInformationOnAHost",
+    "source": "database-3",
+    "target": "database-3",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 14,
+    "out_of_order": true
+  },
+  {
+    "step": 23,
+    "action": "ExfiltrateData",
+    "source": "database-1",
+    "target": "data_database_1.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 9,
+    "out_of_order": false
+  },
+  {
+    "step": 24,
+    "action": "ExfiltrateData",
+    "source": "database-2",
+    "target": "data_database_2.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 12,
+    "out_of_order": false
+  },
+  {
+    "step": 25,
+    "action": "ExfiltrateData",
+    "source": "database-3",
+    "target": "data_database_3.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 15,
+    "out_of_order": false
+  },
+  {
+    "step": 26,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-4",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 16,
+    "out_of_order": false
+  },
+  {
+    "step": 27,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "10.0.0.99",
+    "success": false,
+    "status": "FAILED_EXECUTION",
+    "optimal_action": "FindInformationOnAHost",
+    "optimal_target": "database-4"
+  },
+  {
+    "step": 28,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-5",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 19,
+    "out_of_order": true
+  },
+  {
+    "step": 29,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-6",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 22,
+    "out_of_order": true
+  },
+  {
+    "step": 30,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-7",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 25,
+    "out_of_order": true
+  },
+  {
+    "step": 31,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-8",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 28,
+    "out_of_order": true
+  },
+  {
+    "step": 32,
+    "action": "FindInformationOnAHost",
+    "source": "database-4",
+    "target": "database-4",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 17,
+    "out_of_order": false
+  },
+  {
+    "step": 33,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.199.1",
+    "target": "192.168.199.1",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "ExfiltrateData",
+    "optimal_target": "data_database_4.json"
+  },
+  {
+    "step": 34,
+    "action": "FindInformationOnAHost",
+    "source": "database-5",
+    "target": "database-5",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 20,
+    "out_of_order": true
+  },
+  {
+    "step": 35,
+    "action": "FindInformationOnAHost",
+    "source": "database-6",
+    "target": "database-6",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 23,
+    "out_of_order": true
+  },
+  {
+    "step": 36,
+    "action": "FindInformationOnAHost",
+    "source": "database-7",
+    "target": "database-7",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 26,
+    "out_of_order": true
+  },
+  {
+    "step": 37,
+    "action": "FindInformationOnAHost",
+    "source": "database-8",
+    "target": "database-8",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 29,
+    "out_of_order": true
+  },
+  {
+    "step": 38,
+    "action": "ExfiltrateData",
+    "source": "database-4",
+    "target": "data_database_4.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 18,
+    "out_of_order": false
+  },
+  {
+    "step": 39,
+    "action": "ExfiltrateData",
+    "source": "192.168.199.1",
+    "target": "192.168.199.1",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "ExfiltrateData",
+    "optimal_target": "data_database_5.json"
+  },
+  {
+    "step": 40,
+    "action": "ExfiltrateData",
+    "source": "database-5",
+    "target": "data_database_5.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 21,
+    "out_of_order": false
+  },
+  {
+    "step": 41,
+    "action": "ExfiltrateData",
+    "source": "database-6",
+    "target": "data_database_6.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 24,
+    "out_of_order": false
+  },
+  {
+    "step": 42,
+    "action": "ExfiltrateData",
+    "source": "database-7",
+    "target": "data_database_7.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 27,
+    "out_of_order": false
+  },
+  {
+    "step": 43,
+    "action": "ExfiltrateData",
+    "source": "database-8",
+    "target": "data_database_8.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 30,
+    "out_of_order": false
+  },
+  {
+    "step": 44,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-9",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 31,
+    "out_of_order": false
+  },
+  {
+    "step": 45,
+    "action": "LateralMoveToHost",
+    "source": "kali",
+    "target": "192.168.200.2",
+    "success": false,
+    "status": "FAILED_EXECUTION",
+    "optimal_action": "FindInformationOnAHost",
+    "optimal_target": "database-9"
+  },
+  {
+    "step": 46,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-10",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 34,
+    "out_of_order": true
+  },
+  {
+    "step": 47,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-11",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 37,
+    "out_of_order": true
+  },
+  {
+    "step": 48,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-12",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 40,
+    "out_of_order": true
+  },
+  {
+    "step": 49,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-13",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 43,
+    "out_of_order": true
+  },
+  {
+    "step": 50,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-14",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 46,
+    "out_of_order": true
+  },
+  {
+    "step": 51,
+    "action": "FindInformationOnAHost",
+    "source": "192.168.200.2",
+    "target": "192.168.200.2",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "FindInformationOnAHost",
+    "optimal_target": "database-9"
+  },
+  {
+    "step": 52,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-15",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 49,
+    "out_of_order": true
+  },
+  {
+    "step": 53,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-16",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 52,
+    "out_of_order": true
+  },
+  {
+    "step": 54,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-17",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 55,
+    "out_of_order": true
+  },
+  {
+    "step": 55,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-18",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 58,
+    "out_of_order": true
+  },
+  {
+    "step": 56,
+    "action": "FindInformationOnAHost",
+    "source": "database-9",
+    "target": "database-9",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 32,
+    "out_of_order": false
+  },
+  {
+    "step": 57,
+    "action": "Scan",
+    "source": "kali",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "ExfiltrateData",
+    "optimal_target": "data_database_9.json"
+  },
+  {
+    "step": 58,
+    "action": "FindInformationOnAHost",
+    "source": "database-10",
+    "target": "database-10",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 35,
+    "out_of_order": true
+  },
+  {
+    "step": 59,
+    "action": "FindInformationOnAHost",
+    "source": "database-11",
+    "target": "database-11",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 38,
+    "out_of_order": true
+  },
+  {
+    "step": 60,
+    "action": "FindInformationOnAHost",
+    "source": "database-12",
+    "target": "database-12",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 41,
+    "out_of_order": true
+  },
+  {
+    "step": 61,
+    "action": "FindInformationOnAHost",
+    "source": "database-13",
+    "target": "database-13",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 44,
+    "out_of_order": true
+  },
+  {
+    "step": 62,
+    "action": "FindInformationOnAHost",
+    "source": "database-14",
+    "target": "database-14",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 47,
+    "out_of_order": true
+  },
+  {
+    "step": 63,
+    "action": "FindInformationOnAHost",
+    "source": "database-15",
+    "target": "database-15",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 50,
+    "out_of_order": true
+  },
+  {
+    "step": 64,
+    "action": "FindInformationOnAHost",
+    "source": "database-16",
+    "target": "database-16",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 53,
+    "out_of_order": true
+  },
+  {
+    "step": 65,
+    "action": "FindInformationOnAHost",
+    "source": "database-17",
+    "target": "database-17",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 56,
+    "out_of_order": true
+  },
+  {
+    "step": 66,
+    "action": "FindInformationOnAHost",
+    "source": "database-18",
+    "target": "database-18",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 59,
+    "out_of_order": true
+  },
+  {
+    "step": 67,
+    "action": "ExfiltrateData",
+    "source": "database-9",
+    "target": "data_database_9.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 33,
+    "out_of_order": false
+  },
+  {
+    "step": 68,
+    "action": "FindInformationOnAHost",
+    "source": "webserver-1",
+    "target": "webserver-1",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "ExfiltrateData",
+    "optimal_target": "data_database_10.json"
+  },
+  {
+    "step": 69,
+    "action": "ExfiltrateData",
+    "source": "database-10",
+    "target": "data_database_10.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 36,
+    "out_of_order": false
+  },
+  {
+    "step": 70,
+    "action": "ExfiltrateData",
+    "source": "database-11",
+    "target": "data_database_11.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 39,
+    "out_of_order": false
+  },
+  {
+    "step": 71,
+    "action": "ExfiltrateData",
+    "source": "database-12",
+    "target": "data_database_12.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 42,
+    "out_of_order": false
+  },
+  {
+    "step": 72,
+    "action": "ExfiltrateData",
+    "source": "database-13",
+    "target": "data_database_13.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 45,
+    "out_of_order": false
+  },
+  {
+    "step": 73,
+    "action": "ExfiltrateData",
+    "source": "database-14",
+    "target": "data_database_14.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 48,
+    "out_of_order": false
+  },
+  {
+    "step": 74,
+    "action": "ExfiltrateData",
+    "source": "database-15",
+    "target": "data_database_15.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 51,
+    "out_of_order": false
+  },
+  {
+    "step": 75,
+    "action": "ExfiltrateData",
+    "source": "database-16",
+    "target": "data_database_16.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 54,
+    "out_of_order": false
+  },
+  {
+    "step": 76,
+    "action": "ExfiltrateData",
+    "source": "database-17",
+    "target": "data_database_17.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 57,
+    "out_of_order": false
+  },
+  {
+    "step": 77,
+    "action": "ExfiltrateData",
+    "source": "database-18",
+    "target": "data_database_18.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 60,
+    "out_of_order": false
+  },
+  {
+    "step": 78,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-19",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 61,
+    "out_of_order": false
+  },
+  {
+    "step": 79,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-20",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 64,
+    "out_of_order": true
+  },
+  {
+    "step": 80,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-21",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 67,
+    "out_of_order": true
+  },
+  {
+    "step": 81,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-22",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 70,
+    "out_of_order": true
+  },
+  {
+    "step": 82,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-23",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 73,
+    "out_of_order": true
+  },
+  {
+    "step": 83,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-24",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 76,
+    "out_of_order": true
+  },
+  {
+    "step": 84,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-25",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 79,
+    "out_of_order": true
+  },
+  {
+    "step": 85,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-26",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 82,
+    "out_of_order": true
+  },
+  {
+    "step": 86,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-27",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 85,
+    "out_of_order": true
+  },
+  {
+    "step": 87,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-28",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 88,
+    "out_of_order": true
+  },
+  {
+    "step": 88,
+    "action": "FindInformationOnAHost",
+    "source": "database-19",
+    "target": "database-19",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 62,
+    "out_of_order": false
+  },
+  {
+    "step": 89,
+    "action": "Scan",
+    "source": "kali",
+    "target": "192.168.200.0/24",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "ExfiltrateData",
+    "optimal_target": "data_database_19.json"
+  },
+  {
+    "step": 90,
+    "action": "FindInformationOnAHost",
+    "source": "database-20",
+    "target": "database-20",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 65,
+    "out_of_order": true
+  },
+  {
+    "step": 91,
+    "action": "FindInformationOnAHost",
+    "source": "database-21",
+    "target": "database-21",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 68,
+    "out_of_order": true
+  },
+  {
+    "step": 92,
+    "action": "FindInformationOnAHost",
+    "source": "database-22",
+    "target": "database-22",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 71,
+    "out_of_order": true
+  },
+  {
+    "step": 93,
+    "action": "FindInformationOnAHost",
+    "source": "database-23",
+    "target": "database-23",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 74,
+    "out_of_order": true
+  },
+  {
+    "step": 94,
+    "action": "FindInformationOnAHost",
+    "source": "database-24",
+    "target": "database-24",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 77,
+    "out_of_order": true
+  },
+  {
+    "step": 95,
+    "action": "FindInformationOnAHost",
+    "source": "database-25",
+    "target": "database-25",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 80,
+    "out_of_order": true
+  },
+  {
+    "step": 96,
+    "action": "FindInformationOnAHost",
+    "source": "database-26",
+    "target": "database-26",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 83,
+    "out_of_order": true
+  },
+  {
+    "step": 97,
+    "action": "FindInformationOnAHost",
+    "source": "database-27",
+    "target": "database-27",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 86,
+    "out_of_order": true
+  },
+  {
+    "step": 98,
+    "action": "FindInformationOnAHost",
+    "source": "database-28",
+    "target": "database-28",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 89,
+    "out_of_order": true
+  },
+  {
+    "step": 99,
+    "action": "ExfiltrateData",
+    "source": "database-19",
+    "target": "data_database_19.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 63,
+    "out_of_order": false
+  },
+  {
+    "step": 100,
+    "action": "ExfiltrateData",
+    "source": "database-20",
+    "target": "data_database_20.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 66,
+    "out_of_order": false
+  },
+  {
+    "step": 101,
+    "action": "ExfiltrateData",
+    "source": "database-21",
+    "target": "data_database_21.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 69,
+    "out_of_order": false
+  },
+  {
+    "step": 102,
+    "action": "ExfiltrateData",
+    "source": "database-22",
+    "target": "data_database_22.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 72,
+    "out_of_order": false
+  },
+  {
+    "step": 103,
+    "action": "ExfiltrateData",
+    "source": "database-23",
+    "target": "data_database_23.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 75,
+    "out_of_order": false
+  },
+  {
+    "step": 104,
+    "action": "ExfiltrateData",
+    "source": "database-24",
+    "target": "data_database_24.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 78,
+    "out_of_order": false
+  },
+  {
+    "step": 105,
+    "action": "ExfiltrateData",
+    "source": "database-25",
+    "target": "data_database_25.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 81,
+    "out_of_order": false
+  },
+  {
+    "step": 106,
+    "action": "ExfiltrateData",
+    "source": "database-26",
+    "target": "data_database_26.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 84,
+    "out_of_order": false
+  },
+  {
+    "step": 107,
+    "action": "ExfiltrateData",
+    "source": "database-27",
+    "target": "data_database_27.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 87,
+    "out_of_order": false
+  },
+  {
+    "step": 108,
+    "action": "ExfiltrateData",
+    "source": "database-28",
+    "target": "data_database_28.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 90,
+    "out_of_order": false
+  },
+  {
+    "step": 109,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-29",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 91,
+    "out_of_order": false
+  },
+  {
+    "step": 110,
+    "action": "FindInformationOnAHost",
+    "source": "database-0",
+    "target": "database-0",
+    "success": true,
+    "status": "DEVIATION",
+    "optimal_action": "FindInformationOnAHost",
+    "optimal_target": "database-29"
+  },
+  {
+    "step": 111,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-30",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 94,
+    "out_of_order": true
+  },
+  {
+    "step": 112,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-31",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 97,
+    "out_of_order": true
+  },
+  {
+    "step": 113,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-32",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 100,
+    "out_of_order": true
+  },
+  {
+    "step": 114,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-33",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 103,
+    "out_of_order": true
+  },
+  {
+    "step": 115,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-34",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 106,
+    "out_of_order": true
+  },
+  {
+    "step": 116,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-35",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 109,
+    "out_of_order": true
+  },
+  {
+    "step": 117,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-36",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 112,
+    "out_of_order": true
+  },
+  {
+    "step": 118,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-37",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 115,
+    "out_of_order": true
+  },
+  {
+    "step": 119,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-38",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 118,
+    "out_of_order": true
+  },
+  {
+    "step": 120,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-39",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 121,
+    "out_of_order": true
+  },
+  {
+    "step": 121,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-40",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 124,
+    "out_of_order": true
+  },
+  {
+    "step": 122,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-41",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 127,
+    "out_of_order": true
+  },
+  {
+    "step": 123,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-42",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 130,
+    "out_of_order": true
+  },
+  {
+    "step": 124,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-43",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 133,
+    "out_of_order": true
+  },
+  {
+    "step": 125,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-44",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 136,
+    "out_of_order": true
+  },
+  {
+    "step": 126,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-45",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 139,
+    "out_of_order": true
+  },
+  {
+    "step": 127,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-46",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 142,
+    "out_of_order": true
+  },
+  {
+    "step": 128,
+    "action": "LateralMoveToHost",
+    "source": "webserver-1",
+    "target": "database-47",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 145,
+    "out_of_order": true
+  },
+  {
+    "step": 129,
+    "action": "FindInformationOnAHost",
+    "source": "database-29",
+    "target": "database-29",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 92,
+    "out_of_order": false
+  },
+  {
+    "step": 130,
+    "action": "FindInformationOnAHost",
+    "source": "database-30",
+    "target": "database-30",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 95,
+    "out_of_order": true
+  },
+  {
+    "step": 131,
+    "action": "FindInformationOnAHost",
+    "source": "database-31",
+    "target": "database-31",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 98,
+    "out_of_order": true
+  },
+  {
+    "step": 132,
+    "action": "FindInformationOnAHost",
+    "source": "database-32",
+    "target": "database-32",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 101,
+    "out_of_order": true
+  },
+  {
+    "step": 133,
+    "action": "FindInformationOnAHost",
+    "source": "database-33",
+    "target": "database-33",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 104,
+    "out_of_order": true
+  },
+  {
+    "step": 134,
+    "action": "FindInformationOnAHost",
+    "source": "database-34",
+    "target": "database-34",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 107,
+    "out_of_order": true
+  },
+  {
+    "step": 135,
+    "action": "FindInformationOnAHost",
+    "source": "database-35",
+    "target": "database-35",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 110,
+    "out_of_order": true
+  },
+  {
+    "step": 136,
+    "action": "FindInformationOnAHost",
+    "source": "database-36",
+    "target": "database-36",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 113,
+    "out_of_order": true
+  },
+  {
+    "step": 137,
+    "action": "FindInformationOnAHost",
+    "source": "database-37",
+    "target": "database-37",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 116,
+    "out_of_order": true
+  },
+  {
+    "step": 138,
+    "action": "FindInformationOnAHost",
+    "source": "database-38",
+    "target": "database-38",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 119,
+    "out_of_order": true
+  },
+  {
+    "step": 139,
+    "action": "FindInformationOnAHost",
+    "source": "database-39",
+    "target": "database-39",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 122,
+    "out_of_order": true
+  },
+  {
+    "step": 140,
+    "action": "FindInformationOnAHost",
+    "source": "database-40",
+    "target": "database-40",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 125,
+    "out_of_order": true
+  },
+  {
+    "step": 141,
+    "action": "FindInformationOnAHost",
+    "source": "database-41",
+    "target": "database-41",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 128,
+    "out_of_order": true
+  },
+  {
+    "step": 142,
+    "action": "FindInformationOnAHost",
+    "source": "database-42",
+    "target": "database-42",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 131,
+    "out_of_order": true
+  },
+  {
+    "step": 143,
+    "action": "FindInformationOnAHost",
+    "source": "database-43",
+    "target": "database-43",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 134,
+    "out_of_order": true
+  },
+  {
+    "step": 144,
+    "action": "FindInformationOnAHost",
+    "source": "database-44",
+    "target": "database-44",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 137,
+    "out_of_order": true
+  },
+  {
+    "step": 145,
+    "action": "FindInformationOnAHost",
+    "source": "database-45",
+    "target": "database-45",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 140,
+    "out_of_order": true
+  },
+  {
+    "step": 146,
+    "action": "FindInformationOnAHost",
+    "source": "database-46",
+    "target": "database-46",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 143,
+    "out_of_order": true
+  },
+  {
+    "step": 147,
+    "action": "FindInformationOnAHost",
+    "source": "database-47",
+    "target": "database-47",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 146,
+    "out_of_order": true
+  },
+  {
+    "step": 148,
+    "action": "ExfiltrateData",
+    "source": "database-29",
+    "target": "data_database_29.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 93,
+    "out_of_order": false
+  },
+  {
+    "step": 149,
+    "action": "ExfiltrateData",
+    "source": "database-30",
+    "target": "data_database_30.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 96,
+    "out_of_order": false
+  },
+  {
+    "step": 150,
+    "action": "ExfiltrateData",
+    "source": "database-31",
+    "target": "data_database_31.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 99,
+    "out_of_order": false
+  },
+  {
+    "step": 151,
+    "action": "ExfiltrateData",
+    "source": "database-32",
+    "target": "data_database_32.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 102,
+    "out_of_order": false
+  },
+  {
+    "step": 152,
+    "action": "ExfiltrateData",
+    "source": "database-33",
+    "target": "data_database_33.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 105,
+    "out_of_order": false
+  },
+  {
+    "step": 153,
+    "action": "ExfiltrateData",
+    "source": "database-34",
+    "target": "data_database_34.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 108,
+    "out_of_order": false
+  },
+  {
+    "step": 154,
+    "action": "ExfiltrateData",
+    "source": "database-35",
+    "target": "data_database_35.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 111,
+    "out_of_order": false
+  },
+  {
+    "step": 155,
+    "action": "ExfiltrateData",
+    "source": "database-36",
+    "target": "data_database_36.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 114,
+    "out_of_order": false
+  },
+  {
+    "step": 156,
+    "action": "ExfiltrateData",
+    "source": "database-37",
+    "target": "data_database_37.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 117,
+    "out_of_order": false
+  },
+  {
+    "step": 157,
+    "action": "ExfiltrateData",
+    "source": "database-38",
+    "target": "data_database_38.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 120,
+    "out_of_order": false
+  },
+  {
+    "step": 158,
+    "action": "ExfiltrateData",
+    "source": "database-39",
+    "target": "data_database_39.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 123,
+    "out_of_order": false
+  },
+  {
+    "step": 159,
+    "action": "ExfiltrateData",
+    "source": "database-40",
+    "target": "data_database_40.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 126,
+    "out_of_order": false
+  },
+  {
+    "step": 160,
+    "action": "ExfiltrateData",
+    "source": "database-41",
+    "target": "data_database_41.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 129,
+    "out_of_order": false
+  },
+  {
+    "step": 161,
+    "action": "ExfiltrateData",
+    "source": "database-42",
+    "target": "data_database_42.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 132,
+    "out_of_order": false
+  },
+  {
+    "step": 162,
+    "action": "ExfiltrateData",
+    "source": "database-43",
+    "target": "data_database_43.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 135,
+    "out_of_order": false
+  },
+  {
+    "step": 163,
+    "action": "ExfiltrateData",
+    "source": "database-44",
+    "target": "data_database_44.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 138,
+    "out_of_order": false
+  },
+  {
+    "step": 164,
+    "action": "ExfiltrateData",
+    "source": "database-45",
+    "target": "data_database_45.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 141,
+    "out_of_order": false
+  },
+  {
+    "step": 165,
+    "action": "ExfiltrateData",
+    "source": "database-46",
+    "target": "data_database_46.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 144,
+    "out_of_order": false
+  },
+  {
+    "step": 166,
+    "action": "ExfiltrateData",
+    "source": "database-47",
+    "target": "data_database_47.json",
+    "success": true,
+    "status": "PRODUCTIVE",
+    "optimal_step": 147,
+    "out_of_order": false
+  }
+]

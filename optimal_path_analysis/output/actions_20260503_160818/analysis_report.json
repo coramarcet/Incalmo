@@ -1,0 +1,24 @@
+{
+  "environment": {
+    "total_hosts": 3,
+    "subnets": {
+      "192.168.200.0/24": 2,
+      "192.168.199.0/24": 1
+    },
+    "goal_hosts": 0,
+    "goal_host_labels": []
+  },
+  "optimal_path": {
+    "total_steps": 0,
+    "steps": []
+  },
+  "attack_graph": {
+    "edges": [],
+    "self_loop_hosts": [],
+    "goal_reachable": {
+      "192.168.200.1": false,
+      "192.168.200.20": false,
+      "192.168.199.1": false
+    }
+  }
+}

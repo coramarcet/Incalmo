@@ -1,0 +1,208 @@
+{
+  "summary": {
+    "total_steps": 166,
+    "optimal_path_length": 147,
+    "path_efficiency": 0.8855,
+    "productive_rate": 0.8855,
+    "waste_ratio": 0.1145,
+    "productive_steps": 147,
+    "productive_in_order": 63,
+    "productive_out_of_order": 84,
+    "wasted_steps": 19,
+    "goal_coverage": {
+      "total_goals": 48,
+      "goals_reached": 48,
+      "goals_missed": 0,
+      "coverage_rate": 1.0
+    },
+    "warnings": []
+  },
+  "category_breakdown": {
+    "PRODUCTIVE": 147,
+    "SUBOPTIMAL_ORDERING": 3,
+    "IRRELEVANT": 8,
+    "REDUNDANT": 8
+  },
+  "excess_actions_by_type": {
+    "Scan": 6,
+    "LateralMoveToHost": 6,
+    "FindInformationOnAHost": 5,
+    "EscelatePrivledge": 1,
+    "ExfiltrateData": 1
+  },
+  "deviation_blocks": [
+    {
+      "start_step": 2,
+      "end_step": 10,
+      "steps": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "labels": [
+        "SUBOPTIMAL_ORDERING",
+        "SUBOPTIMAL_ORDERING",
+        "SUBOPTIMAL_ORDERING",
+        "IRRELEVANT",
+        "IRRELEVANT",
+        "REDUNDANT",
+        "IRRELEVANT",
+        "REDUNDANT",
+        "REDUNDANT"
+      ],
+      "length": 9,
+      "breakdown": {
+        "SUBOPTIMAL_ORDERING": 3,
+        "IRRELEVANT": 3,
+        "REDUNDANT": 3
+      }
+    },
+    {
+      "start_step": 16,
+      "end_step": 16,
+      "steps": [
+        16
+      ],
+      "labels": [
+        "REDUNDANT"
+      ],
+      "length": 1,
+      "breakdown": {
+        "REDUNDANT": 1
+      }
+    },
+    {
+      "start_step": 27,
+      "end_step": 27,
+      "steps": [
+        27
+      ],
+      "labels": [
+        "IRRELEVANT"
+      ],
+      "length": 1,
+      "breakdown": {
+        "IRRELEVANT": 1
+      }
+    },
+    {
+      "start_step": 33,
+      "end_step": 33,
+      "steps": [
+        33
+      ],
+      "labels": [
+        "IRRELEVANT"
+      ],
+      "length": 1,
+      "breakdown": {
+        "IRRELEVANT": 1
+      }
+    },
+    {
+      "start_step": 39,
+      "end_step": 39,
+      "steps": [
+        39
+      ],
+      "labels": [
+        "IRRELEVANT"
+      ],
+      "length": 1,
+      "breakdown": {
+        "IRRELEVANT": 1
+      }
+    },
+    {
+      "start_step": 45,
+      "end_step": 45,
+      "steps": [
+        45
+      ],
+      "labels": [
+        "IRRELEVANT"
+      ],
+      "length": 1,
+      "breakdown": {
+        "IRRELEVANT": 1
+      }
+    },
+    {
+      "start_step": 51,
+      "end_step": 51,
+      "steps": [
+        51
+      ],
+      "labels": [
+        "IRRELEVANT"
+      ],
+      "length": 1,
+      "breakdown": {
+        "IRRELEVANT": 1
+      }
+    },
+    {
+      "start_step": 57,
+      "end_step": 57,
+      "steps": [
+        57
+      ],
+      "labels": [
+        "REDUNDANT"
+      ],
+      "length": 1,
+      "breakdown": {
+        "REDUNDANT": 1
+      }
+    },
+    {
+      "start_step": 68,
+      "end_step": 68,
+      "steps": [
+        68
+      ],
+      "labels": [
+        "REDUNDANT"
+      ],
+      "length": 1,
+      "breakdown": {
+        "REDUNDANT": 1
+      }
+    },
+    {
+      "start_step": 89,
+      "end_step": 89,
+      "steps": [
+        89
+      ],
+      "labels": [
+        "REDUNDANT"
+      ],
+      "length": 1,
+      "breakdown": {
+        "REDUNDANT": 1
+      }
+    },
+    {
+      "start_step": 110,
+      "end_step": 110,
+      "steps": [
+        110
+      ],
+      "labels": [
+        "REDUNDANT"
+      ],
+      "length": 1,
+      "breakdown": {
+        "REDUNDANT": 1
+      }
+    }
+  ],
+  "missed_goals": []
+}
