@@ -16,12 +16,19 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 
-# Color mapping by current taxonomy labels
+# Color mapping by current taxonomy labels.
+# The full taxonomy splits the old SUBOPTIMAL_EXPLORATION into three
+# sub-labels (IRRELEVANT / DEAD_END / SUBOPTIMAL_ORDERING). When the
+# attack graph isn't available, the classifier still emits the legacy
+# SUBOPTIMAL_EXPLORATION label, so we keep its color too.
 COLOR_MAP = {
-    "PRODUCTIVE": "#2ca02c",             # green
-    "SUBOPTIMAL_EXPLORATION": "#d62728", # red
-    "FAILED_EXECUTION": "#ff7f0e",       # orange
-    "REDUNDANT": "#9467bd",              # purple
+    "PRODUCTIVE": "#2ca02c",              # green
+    "FAILED_EXECUTION": "#ff7f0e",        # orange
+    "REDUNDANT": "#9467bd",               # purple
+    "IRRELEVANT": "#1f77b4",              # blue — no graph edge
+    "DEAD_END": "#8c564b",                # brown — no path to goal
+    "SUBOPTIMAL_ORDERING": "#d62728",     # red — off-path but valid
+    "SUBOPTIMAL_EXPLORATION": "#d62728",  # red — fallback when graph missing
 }
 DEFAULT_COLOR = "gray"
 
@@ -94,12 +101,27 @@ def plot_trajectory(classified_path, analysis_path, output_path):
     ax.set_ylim(0, ymax + 2)
     ax.grid(True, linestyle=":", alpha=0.5)
 
-    legend_handles = [
-        mpatches.Patch(color="#2ca02c", label="PRODUCTIVE"),
-        mpatches.Patch(color="#d62728", label="SUBOPTIMAL_EXPLORATION"),
-        mpatches.Patch(color="#ff7f0e", label="FAILED_EXECUTION"),
-        mpatches.Patch(color="#9467bd", label="REDUNDANT (frontier decay)"),
-    ]
+    # Build legend showing only labels that actually appear in this trace,
+    # in a stable order (productive first, then failure types).
+    labels_present = {entry.get("taxonomy_label", "UNKNOWN") for entry in trace}
+    label_order = ["PRODUCTIVE", "FAILED_EXECUTION", "REDUNDANT",
+                   "IRRELEVANT", "DEAD_END", "SUBOPTIMAL_ORDERING",
+                   "SUBOPTIMAL_EXPLORATION"]
+    label_descriptions = {
+        "PRODUCTIVE": "PRODUCTIVE",
+        "FAILED_EXECUTION": "FAILED_EXECUTION",
+        "REDUNDANT": "REDUNDANT (frontier decay)",
+        "IRRELEVANT": "IRRELEVANT (no graph edge)",
+        "DEAD_END": "DEAD_END (no path to goal)",
+        "SUBOPTIMAL_ORDERING": "SUBOPTIMAL_ORDERING (off-path, valid)",
+        "SUBOPTIMAL_EXPLORATION": "SUBOPTIMAL_EXPLORATION (graph unavailable)",
+    }
+    legend_handles = []
+    for lbl in label_order:
+        if lbl in labels_present:
+            legend_handles.append(
+                mpatches.Patch(color=COLOR_MAP[lbl],
+                               label=label_descriptions[lbl]))
     if optimal_length > 0:
         legend_handles.append(plt.Line2D(
             [0], [0], color="#2ca02c", linestyle="--",

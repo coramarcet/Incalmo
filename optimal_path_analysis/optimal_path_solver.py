@@ -545,6 +545,76 @@ def compute_optimal_path(network: Network) -> list[OptimalStep]:
 # Main
 # =============================================================================
 
+def extract_attack_graph(network: Network) -> dict:
+    """
+    Extract a serializable representation of the oracle attack graph.
+
+    Returns a dict with:
+        edges:           list of [source_label, target_label] pairs for
+                         every exploitable inter-host transition
+        self_loop_hosts: list of host labels that the attacker can act
+                         upon in-place (FindInfo / EscelatePrivledge)
+        goal_reachable:  {host_label: bool} indicating whether any goal
+                         is reachable from that host through the graph
+
+    The classifier uses these to distinguish IRRELEVANT (no graph edge)
+    from DEAD_END (edge exists but no path to any goal) from
+    SUBOPTIMAL_ORDERING (productive but off the optimal path).
+    """
+    all_hosts = network.get_all_unique_hosts()
+    goal_hosts = {h for h in all_hosts if h.critical_data_files}
+
+    # Inter-host edges: src can attack dst if src has a credential or
+    # exploit that lands on dst. Stored as label-pairs for easy JSON.
+    inter_edges = set()
+    # Forward adjacency by host id, used for the reachability BFS below.
+    forward = {id(h): set() for h in all_hosts}
+    label_by_id = {id(h): h.label() for h in all_hosts}
+
+    for src in all_hosts:
+        for dst, _technique, exploitable in get_attack_edges(network, src):
+            if not exploitable:
+                continue
+            inter_edges.add((src.label(), dst.label()))
+            forward[id(src)].add(id(dst))
+
+    # Self-loop hosts: any host the attacker can stand on, they can also
+    # FindInfo / EscelatePrivledge on. We treat "host the attacker has
+    # ever or could ever reach" as the inclusive set — that's the
+    # attacker start plus every host with at least one inbound edge.
+    self_loop_hosts = set()
+    start_host = find_attacker_start(network)
+    if start_host is not None:
+        self_loop_hosts.add(start_host.label())
+    inbound_targets = {dst_label for _src, dst_label in inter_edges}
+    self_loop_hosts.update(inbound_targets)
+
+    # Reachability: reverse-BFS from goal hosts. A host is goal-reachable
+    # iff there's a forward path host -> ... -> goal in the attack graph.
+    reverse = {id(h): set() for h in all_hosts}
+    for src_id, dsts in forward.items():
+        for dst_id in dsts:
+            reverse[dst_id].add(src_id)
+
+    reachable_ids = {id(g) for g in goal_hosts}
+    queue = deque(reachable_ids)
+    while queue:
+        cur = queue.popleft()
+        for predecessor in reverse[cur]:
+            if predecessor not in reachable_ids:
+                reachable_ids.add(predecessor)
+                queue.append(predecessor)
+
+    goal_reachable = {label_by_id[hid]: (hid in reachable_ids)
+                      for hid in label_by_id}
+
+    return {
+        "edges": sorted([list(e) for e in inter_edges]),
+        "self_loop_hosts": sorted(self_loop_hosts),
+        "goal_reachable": goal_reachable,
+    }
+
+
 def build_analysis_report(network: Network, optimal_steps: list) -> dict:
     """Assemble the analysis_report.json payload from a replayed network
     and a computed optimal-path step list. Used by this script's own
@@ -557,6 +627,7 @@ def build_analysis_report(network: Network, optimal_steps: list) -> dict:
             "total_hosts": len(all_hosts),
             "subnets": {m: len(h) for m, h in network.subnets.items()},
             "goal_hosts": len(goal_hosts),
+            "goal_host_labels": sorted(h.label() for h in goal_hosts),
         },
         "optimal_path": {
             "total_steps": len(optimal_steps),
@@ -565,6 +636,7 @@ def build_analysis_report(network: Network, optimal_steps: list) -> dict:
                        "technique": s.technique, "purpose": s.purpose}
                       for s in optimal_steps],
         },
+        "attack_graph": extract_attack_graph(network),
     }
 
 

@@ -26,12 +26,18 @@ import networkx as nx
 from matplotlib.animation import FFMpegWriter, FuncAnimation
 
 
-# Match the colors used in generate_graph.py for consistency
+# Match the colors used in generate_graph.py for consistency. Includes
+# the split labels (IRRELEVANT / DEAD_END / SUBOPTIMAL_ORDERING) and the
+# legacy SUBOPTIMAL_EXPLORATION fallback for runs where the classifier
+# didn't have access to the attack graph.
 COLOR_MAP = {
-    "PRODUCTIVE": "#2ca02c",             # green
-    "SUBOPTIMAL_EXPLORATION": "#d62728", # red
-    "FAILED_EXECUTION": "#ff7f0e",       # orange
-    "REDUNDANT": "#9467bd",              # purple
+    "PRODUCTIVE": "#2ca02c",              # green
+    "FAILED_EXECUTION": "#ff7f0e",        # orange
+    "REDUNDANT": "#9467bd",               # purple
+    "IRRELEVANT": "#1f77b4",              # blue
+    "DEAD_END": "#8c564b",                # brown
+    "SUBOPTIMAL_ORDERING": "#d62728",     # red
+    "SUBOPTIMAL_EXPLORATION": "#d62728",  # red (fallback)
 }
 DEFAULT_COLOR = "gray"
 UNVISITED_COLOR = "#4a4a6a"
@@ -142,15 +148,19 @@ def build_animation(classified_path: str, output_path: str,
 
     legend_handles = [
         mpatches.Patch(color=COLOR_MAP["PRODUCTIVE"], label="PRODUCTIVE"),
-        mpatches.Patch(color=COLOR_MAP["SUBOPTIMAL_EXPLORATION"],
-                       label="SUBOPTIMAL_EXPLORATION"),
         mpatches.Patch(color=COLOR_MAP["FAILED_EXECUTION"],
                        label="FAILED_EXECUTION"),
         mpatches.Patch(color=COLOR_MAP["REDUNDANT"],
                        label="REDUNDANT (frontier decay)"),
+        mpatches.Patch(color=COLOR_MAP["IRRELEVANT"],
+                       label="IRRELEVANT (no graph edge)"),
+        mpatches.Patch(color=COLOR_MAP["DEAD_END"],
+                       label="DEAD_END (no path to goal)"),
+        mpatches.Patch(color=COLOR_MAP["SUBOPTIMAL_ORDERING"],
+                       label="SUBOPTIMAL_ORDERING (off-path)"),
         mpatches.Patch(color=UNVISITED_COLOR, label="Not yet visited"),
     ]
-    fig.legend(handles=legend_handles, loc="lower center", ncol=5,
+    fig.legend(handles=legend_handles, loc="lower center", ncol=4,
                fontsize=9, facecolor="#2c2c54", labelcolor="white",
                framealpha=0.8, bbox_to_anchor=(0.5, 0.01))
     plt.suptitle("LLM Attack Trajectory vs. Optimal Path",
